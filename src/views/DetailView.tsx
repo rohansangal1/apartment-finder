@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useSearch } from '../context/SearchContext';
-import { getListings, getCommute, getRating, getReviews, geocode } from '../lib/dataClient';
+import { useUserData } from '../context/UserDataContext';
+import { getListings, getCommute, getRating, geocode } from '../lib/dataClient';
 import type { Listing, Rating as RatingType, Review, CommuteMode } from '../lib/types';
 import MatchScore from '../components/MatchScore';
 import Rating from '../components/Rating';
 import Tag from '../components/Tag';
 import SaveButton from '../components/SaveButton';
+import ReviewForm from '../components/ReviewForm';
 import { formatRent, formatBeds, resolveListingUrl, sourceLabel } from '../lib/format';
 
 const ALL_MODES: CommuteMode[] = ['walk', 'transit', 'bike', 'drive'];
@@ -20,6 +22,7 @@ const ALL_MODES: CommuteMode[] = ['walk', 'transit', 'bike', 'drive'];
 export default function DetailView() {
   const { id } = useParams<{ id: string }>();
   const { results, criteria } = useSearch();
+  const { getReviews, addReview, canWriteReviews } = useUserData();
 
   const fromResults = results.find((r) => r.listing.id === id);
   const [listing, setListing] = useState<Listing | null>(fromResults?.listing ?? null);
@@ -216,6 +219,18 @@ export default function DetailView() {
               </li>
             ))}
           </ul>
+        )}
+        {canWriteReviews ? (
+          <ReviewForm
+            onSubmit={async (draft) => {
+              const created = await addReview({ ...draft, listingId: listing.id });
+              setReviews((prev) => [created, ...(prev ?? [])]);
+            }}
+          />
+        ) : (
+          <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
+            Sign in to write a review for a place you’ve lived.
+          </p>
         )}
         <p className="mt-3 text-xs text-slate-400">
           Ratings blend external sources with first-party reviews, weighting verified residents

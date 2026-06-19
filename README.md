@@ -98,4 +98,24 @@ To switch the app from mock → live:
 No view/component changes — `apiClient.ts` satisfies the same `DataClient`
 interface as `mockClient.ts`, and the server reuses the same `scoring.ts`.
 
-See [`api/README.md`](api/README.md) for endpoint details and the Phase 2 plan.
+See [`api/README.md`](api/README.md) for endpoint details.
+
+## Phase 2 — accounts, saved, reviews (built, needs Supabase)
+
+Auth + per-user persistence via Supabase (Postgres + Google Auth + RLS):
+
+- **Google sign-in** — `AuthContext` wraps `supabase.auth.signInWithOAuth`.
+- **Saved listings & default preferences** — persisted per user; returning users
+  skip re-entering their situation.
+- **First-party reviews** — read + write, gated behind sign-in; `lived_here`
+  verified reviews are the trust moat.
+- **Row-Level Security** — users touch only their own rows; reviews stay public.
+
+It's all behind a `UserStore` interface with two implementations
+([localStore](src/lib/userData/localStore.ts) for guests,
+[supabaseStore](src/lib/userData/supabaseStore.ts) for signed-in users), chosen
+by [UserDataContext](src/context/UserDataContext.tsx). With no Supabase env vars,
+the app runs in **guest mode** (localStorage) — exactly like Phase 0/1.
+
+To enable: follow [`supabase/README.md`](supabase/README.md) (apply the SQL
+schema, configure Google OAuth, set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`).

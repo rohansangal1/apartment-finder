@@ -85,6 +85,25 @@ export interface ScoredListing {
   subScores: SubScores;
 }
 
+/**
+ * Persisted per-user default search preferences (Phase 2). A subset of
+ * SearchCriteria so returning, signed-in users skip re-entering their situation.
+ */
+export interface UserPreferences {
+  homeCity?: string;
+  workAddress?: string;
+  commuteMode?: CommuteMode;
+  weights?: Weights;
+}
+
+/** A review as submitted by a user, before the store assigns id/createdAt. */
+export interface NewReview {
+  listingId: string;
+  stars: number;
+  text: string;
+  livedHereVerified: boolean;
+}
+
 /** The interface every dataClient implementation (mock now, api later) satisfies. */
 export interface DataClient {
   getListings(criteria: Partial<SearchCriteria>): Promise<Listing[]>;
