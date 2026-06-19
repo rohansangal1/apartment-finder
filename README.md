@@ -82,4 +82,40 @@ neutral 60, never zero; missing data is never fabricated.
 Static site on Vercel or Netlify. `vercel.json` includes the SPA rewrite. No
 secrets, nothing to persist.
 
-See [`api/README.md`](api/README.md) for the Phase 1/2 backend plan.
+## Phase 1 — real APIs (built, needs keys)
+
+The serverless layer is implemented in [`api/`](api/README.md): `POST /api/search`
+(orchestration) plus `/api/geocode`, `/api/commute`, `/api/rating`, with caching,
+per-IP rate limiting, and a daily budget circuit breaker. Providers: RentCast
+(listings), TravelTime (geocode + commute), Google Places (ratings).
+
+To switch the app from mock → live:
+
+1. Add the provider keys in Vercel project settings (see `.env.example`).
+2. Set `VITE_DATA_SOURCE=api`.
+3. Deploy (or run `vercel dev` locally).
+
+No view/component changes — `apiClient.ts` satisfies the same `DataClient`
+interface as `mockClient.ts`, and the server reuses the same `scoring.ts`.
+
+See [`api/README.md`](api/README.md) for endpoint details.
+
+## Phase 2 — accounts, saved, reviews (built, needs Supabase)
+
+Auth + per-user persistence via Supabase (Postgres + Google Auth + RLS):
+
+- **Google sign-in** — `AuthContext` wraps `supabase.auth.signInWithOAuth`.
+- **Saved listings & default preferences** — persisted per user; returning users
+  skip re-entering their situation.
+- **First-party reviews** — read + write, gated behind sign-in; `lived_here`
+  verified reviews are the trust moat.
+- **Row-Level Security** — users touch only their own rows; reviews stay public.
+
+It's all behind a `UserStore` interface with two implementations
+([localStore](src/lib/userData/localStore.ts) for guests,
+[supabaseStore](src/lib/userData/supabaseStore.ts) for signed-in users), chosen
+by [UserDataContext](src/context/UserDataContext.tsx). With no Supabase env vars,
+the app runs in **guest mode** (localStorage) — exactly like Phase 0/1.
+
+To enable: follow [`supabase/README.md`](supabase/README.md) (apply the SQL
+schema, configure Google OAuth, set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`).

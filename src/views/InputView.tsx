@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearch, DEFAULT_CRITERIA } from '../context/SearchContext';
+import { useUserData } from '../context/UserDataContext';
 import type { SearchCriteria, CommuteMode, Weights } from '../lib/types';
 
 /** Cities we have (mock) inventory for. Real backend would discover this dynamically. */
@@ -26,7 +27,33 @@ const PRIORITIES: Array<{ key: keyof Weights; label: string; hint: string }> = [
 export default function InputView() {
   const navigate = useNavigate();
   const { criteria, search } = useSearch();
+  const { getPreferences } = useUserData();
   const [form, setForm] = useState<SearchCriteria>(criteria || DEFAULT_CRITERIA);
+
+  // Pre-fill from saved defaults (signed-in users skip re-entering their situation).
+  // Only applies when the form is still at the untouched default, so it never
+  // clobbers edits the user has already made this session.
+  useEffect(() => {
+    let cancelled = false;
+    getPreferences()
+      .then((prefs) => {
+        if (!prefs || cancelled) return;
+        setForm((f) => {
+          if (f !== DEFAULT_CRITERIA) return f; // user already interacted
+          return {
+            ...f,
+            city: prefs.homeCity ?? f.city,
+            workAddress: prefs.workAddress ?? f.workAddress,
+            commuteMode: prefs.commuteMode ?? f.commuteMode,
+            weights: prefs.weights ?? f.weights,
+          };
+        });
+      })
+      .catch((e) => console.error('Failed to load preferences', e));
+    return () => {
+      cancelled = true;
+    };
+  }, [getPreferences]);
 
   const set = (patch: Partial<SearchCriteria>) => setForm((f) => ({ ...f, ...patch }));
   const setWeight = (key: keyof Weights, value: number) =>

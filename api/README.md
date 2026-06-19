@@ -1,39 +1,54 @@
-# `/api` — serverless functions (Phase 1+)
+# `/api` — serverless functions (Phase 1)
 
-This folder is intentionally **empty of logic in Phase 0**. It exists so the
-move from in-browser mock data → real external APIs is *additive*, not a
-restructure.
+Why a backend exists here (and not in Phase 0): **secret keys** can't live in
+browser code, and these APIs **bill per call** so responses must be cached. Both
+forces are handled in this folder. The browser only ever talks to these
+endpoints (via `src/lib/dataClient/apiClient.ts`) — never to RentCast/TravelTime/
+Google directly.
 
-## Why a backend is needed here (and not before)
+Folders/files starting with `_` are **not** routed as functions — `_lib/` is
+shared server code.
 
-Two forces, both in Phase 1:
+## Endpoints
 
-1. **Secret keys.** RentCast, TravelTime, and Google keys cannot live in browser
-   code — anyone can read them in dev tools and run up the bill. Every external
-   call must go through serverless functions we control.
-2. **Cost control via caching.** These APIs bill per call, so cache aggressively
-   in a durable store (Vercel KV / Upstash, then the Phase 2 Postgres):
-   - Geocoded addresses — cache forever (coordinates never change).
-   - Commute times keyed by `(originHash, listingId, mode)` — long TTL.
-   - Ratings per building — ~1 week TTL.
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/search` | POST | Orchestrate listings → geocode → commute → ratings → score → ranked results, in one round-trip. Body = `SearchCriteria`. |
+| `/api/geocode` | GET | `?address=` → `{ lat, lng }` (cached ~forever). |
+| `/api/commute` | GET | `?originLat&originLng&destLat&destLng&mode` → `{ minutes, mode }`. Progressive hydration. |
+| `/api/rating` | GET | `?address&city` → `{ value, source }`. `value: null` when sparse. |
 
-## Planned endpoints
+## `_lib/` building blocks
 
-| Endpoint | Responsibility |
-|----------|----------------|
-| `POST /api/search` | Orchestrate: listings (RentCast) → geocode + commute (TravelTime) → ratings (Places) → score → ranked results. Mirrors `src/lib/searchService.js`, which is deliberately written to lift straight into here. |
-| `GET /api/commute` | Progressive hydration: fill commute after listings render. |
-| `GET /api/rating` | Progressive hydration: fill ratings after listings render. |
+- **`env.ts`** — `requireEnv` (503 on missing key), budget/rate-limit config, `HttpError`.
+- **`cache.ts`** — read-through cache. Upstash Redis when `UPSTASH_*` is set, else in-process Map. TTLs: geocode ~1yr, commute 2wk, rating 1wk, listings 6h.
+- **`rateLimit.ts`** — per-IP fixed-window limiter (Upstash or memory). 429 when exceeded.
+- **`budgetGuard.ts`** — daily spend estimate + circuit breaker; trips at `DAILY_BUDGET_USD`.
+- **`handler.ts`** — wraps every endpoint: CORS, method check, rate limit, error → JSON.
+- **`providers/`** — `rentcast` (listings), `traveltime` (geocode + commute), `places` (ratings).
+- **`ratings.ts`** — blends external + first-party reviews (first-party empty until Phase 2).
+- **`orchestrate.ts`** — the `/api/search` flow; reuses the SAME `src/lib/scoring.ts` as the client.
 
-Plus: per-IP **rate limiting** and a daily **budget guard / circuit breaker**.
+## Going live
 
-## How the client switches over
+1. Set `RENTCAST_API_KEY`, `TRAVELTIME_APP_ID`, `TRAVELTIME_API_KEY`,
+   `GOOGLE_MAPS_API_KEY` in Vercel project settings (see `.env.example`).
+2. (Recommended) Set `UPSTASH_REDIS_REST_URL` + `_TOKEN` so cache + rate limits
+   are durable across invocations.
+3. Set the client's `VITE_DATA_SOURCE=api` and redeploy.
 
-The UI only ever imports from `src/lib/dataClient`. To go live:
+## Local development
 
-1. Add `src/lib/dataClient/apiClient.ts` exporting the same
-   `getListings / getCommute / getRating / geocode` methods, but calling these
-   endpoints via `fetch`.
-2. Set `VITE_DATA_SOURCE=api`.
+```bash
+npm i -g vercel        # once
+vercel dev             # serves the SPA + /api functions together
+```
+Put the secrets in a local `.env` (gitignored) for `vercel dev`. Without keys,
+endpoints return a clear 503 — the UI still runs on `VITE_DATA_SOURCE=mock`.
 
-No view or component changes — that's the whole point of the abstraction.
+## Known Phase 1 limitation
+
+Deep-linking straight to a detail page (or the Saved view) calls
+`getListings({ city: '' })` to rehydrate, which has no city to search. Phase 2's
+`listings_cache` table fixes this (rank/rehydrate without re-hitting the API).
+Until then, those views are reliable when reached via a search in-session.

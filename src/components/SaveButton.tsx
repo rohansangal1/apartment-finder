@@ -1,8 +1,8 @@
-import { useSearch } from '../context/SearchContext';
+import { useUserData } from '../context/UserDataContext';
 
-/** Heart toggle to save/unsave a listing (Phase 0: localStorage; Phase 2: per-user DB). */
+/** Heart toggle to save/unsave a listing (guest: localStorage; signed in: per-user DB). */
 export default function SaveButton({ id, className = '' }: { id: string; className?: string }) {
-  const { isSaved, toggleSaved } = useSearch();
+  const { isSaved, toggleSaved } = useUserData();
   const saved = isSaved(id);
 
   return (
@@ -11,7 +11,7 @@ export default function SaveButton({ id, className = '' }: { id: string; classNa
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        toggleSaved(id);
+        void toggleSaved(id);
       }}
       aria-pressed={saved}
       aria-label={saved ? 'Remove from saved' : 'Save apartment'}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useSearch } from '../context/SearchContext';
+import { useUserData } from '../context/UserDataContext';
 import { getListings, getRating } from '../lib/dataClient';
 import type { Listing } from '../lib/types';
 import Rating from '../components/Rating';
@@ -13,7 +13,7 @@ import { formatRent, formatBeds, resolveListingUrl } from '../lib/format';
  * `saved_listings` table behind Supabase auth (gated by a sign-in check).
  */
 export default function SavedView() {
-  const { savedIds } = useSearch();
+  const { savedIds } = useUserData();
   const [listings, setListings] = useState<Listing[] | null>(null);
 
   useEffect(() => {
