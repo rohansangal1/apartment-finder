@@ -5,11 +5,8 @@
  * (normalized) priority weights. Everything here is a pure function so it can be
  * unit-tested and reasoned about in isolation. Nothing in here touches the
  * network or the DOM.
- *
- * @typedef {import('./types.js').Listing} Listing
- * @typedef {import('./types.js').SearchCriteria} SearchCriteria
- * @typedef {import('./types.js').Weights} Weights
  */
+import type { Listing, SearchCriteria, Weights, SubScores } from './types';
 
 /** Max acceptable commute, in minutes, before commute fit hits 0. Tune per mode later. */
 export const MAX_COMMUTE = 60;
@@ -17,26 +14,26 @@ export const MAX_COMMUTE = 60;
 /** Neutral rating fit for listings with no rating data — sits at neutral, not zero. */
 const UNKNOWN_RATING_FIT = 60;
 
-/**
- * Normalize weights so they always sum to 1. Guards against an all-zero object.
- * @param {Weights} weights
- * @returns {Weights}
- */
-export function normalizeWeights(weights) {
+/** Normalize weights so they always sum to 1. Guards against an all-zero object. */
+export function normalizeWeights(weights: Weights): Weights {
   const total = Object.values(weights).reduce((a, b) => a + b, 0) || 1;
-  return Object.fromEntries(
-    Object.entries(weights).map(([k, v]) => [k, v / total])
-  );
+  return {
+    commute: weights.commute / total,
+    price: weights.price / total,
+    rating: weights.rating / total,
+    space: weights.space / total,
+  };
 }
 
 /**
  * Compute the four 0–100 sub-scores for a listing. Exposed separately so the UI
  * can explain *why* something matched.
- * @param {Listing} listing
- * @param {SearchCriteria} criteria
- * @param {number} commuteMinutes
  */
-export function computeSubScores(listing, criteria, commuteMinutes) {
+export function computeSubScores(
+  listing: Listing,
+  criteria: SearchCriteria,
+  commuteMinutes: number
+): SubScores {
   const { maxRent } = criteria;
 
   // Price fit: full marks well under budget, declining toward the cap, penalized over.
@@ -52,9 +49,7 @@ export function computeSubScores(listing, criteria, commuteMinutes) {
 
   // Rating fit: scale 1–5 to 0–100. Unknown ratings sit at neutral, not zero.
   const ratingFit =
-    listing.ratingValue == null
-      ? UNKNOWN_RATING_FIT
-      : (listing.ratingValue / 5) * 100;
+    listing.ratingValue == null ? UNKNOWN_RATING_FIT : (listing.ratingValue / 5) * 100;
 
   // Space fit: meets or exceeds desired bedrooms = full marks.
   const spaceFit =
@@ -72,12 +67,13 @@ export function computeSubScores(listing, criteria, commuteMinutes) {
 
 /**
  * Combine sub-scores by the user's normalized weights into a 0–100 match score.
- * @param {Listing} listing
- * @param {SearchCriteria} criteria
- * @param {number} commuteMinutes
- * @returns {number} integer 0–100
+ * @returns integer 0–100
  */
-export function scoreListing(listing, criteria, commuteMinutes) {
+export function scoreListing(
+  listing: Listing,
+  criteria: SearchCriteria,
+  commuteMinutes: number
+): number {
   const sub = computeSubScores(listing, criteria, commuteMinutes);
   const w = normalizeWeights(criteria.weights);
 
@@ -94,13 +90,10 @@ export function scoreListing(listing, criteria, commuteMinutes) {
  * Human-readable "why it matched" from whichever sub-scores are highest,
  * weighted by what the user actually cares about (so we don't brag about a
  * dimension they put zero weight on).
- * @param {ReturnType<typeof computeSubScores>} sub
- * @param {SearchCriteria} criteria
- * @returns {string}
  */
-export function explainMatch(sub, criteria) {
+export function explainMatch(sub: SubScores, criteria: SearchCriteria): string {
   const w = normalizeWeights(criteria.weights);
-  const phrases = {
+  const phrases: Record<keyof SubScores, string> = {
     commute: phraseFor(sub.commute, 'a quick commute', 'a manageable commute'),
     price: phraseFor(sub.price, 'well under budget', 'a fair price'),
     rating: phraseFor(sub.rating, 'highly rated', 'solid reviews'),
@@ -108,7 +101,8 @@ export function explainMatch(sub, criteria) {
   };
 
   // Rank dimensions by weighted contribution, drop ones the user ignores or that score poorly.
-  const ranked = Object.keys(phrases)
+  const keys = Object.keys(phrases) as Array<keyof SubScores>;
+  const ranked = keys
     .filter((k) => w[k] > 0.01 && sub[k] >= 50)
     .sort((a, b) => w[b] * sub[b] - w[a] * sub[a])
     .slice(0, 2)
@@ -119,14 +113,14 @@ export function explainMatch(sub, criteria) {
   return capitalize(`${ranked[0]} and ${ranked[1]}.`);
 }
 
-function phraseFor(value, strong, mild) {
+function phraseFor(value: number, strong: string, mild: string): string {
   return value >= 80 ? strong : mild;
 }
 
-function clamp(n) {
+function clamp(n: number): number {
   return Math.max(0, Math.min(100, n));
 }
 
-function capitalize(s) {
+function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }

@@ -6,17 +6,19 @@ recommendations with **match scores** and **ratings**. Nestle is a
 discovery/aggregator layer — it does **not** host listings or handle
 transactions; every recommendation links out to its source.
 
-This repo is **Phase 0** (prototype): a pure React SPA with mock data, ready to
-deploy as a static site. The architecture is built so Phase 1 (real APIs behind
-serverless functions) and Phase 2 (Supabase accounts + reviews) are *additive*.
+This repo is **Phase 0** (prototype): a pure React + TypeScript SPA with mock
+data, ready to deploy as a static site. The architecture is built so Phase 1
+(real APIs behind serverless functions) and Phase 2 (Supabase accounts +
+reviews) are *additive*.
 
 ## Quick start
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # production build into dist/
-npm run preview  # preview the production build
+npm run dev        # http://localhost:5173
+npm run typecheck  # tsc project-references check, no emit
+npm run build      # tsc -b && vite build into dist/
+npm run preview    # preview the production build
 ```
 
 ## Architecture
@@ -24,27 +26,29 @@ npm run preview  # preview the production build
 ```
 src/
   lib/
-    dataClient/        ← the ONLY boundary to external data
-      index.js         ← picks impl by VITE_DATA_SOURCE (mock | api)
-      mockClient.js    ← Phase 0 in-browser fixtures
-      (apiClient.js)   ← Phase 1: calls /api, same 4 methods
-    mockData/          ← listings, reviews, geocode fixtures
-    scoring.js         ← pure match-scoring engine (scoreListing, weights, why)
-    searchService.js   ← orchestration (lifts into POST /api/search later)
-    types.js           ← shared JSDoc data model
-    format.js          ← display + graceful link-rot fallback helpers
+    dataClient/         ← the ONLY boundary to external data
+      index.ts          ← picks impl by VITE_DATA_SOURCE (mock | api)
+      mockClient.ts     ← Phase 0 in-browser fixtures
+      (apiClient.ts)    ← Phase 1: calls /api, same DataClient interface
+    mockData/           ← listings, reviews, geocode fixtures
+    scoring.ts          ← pure match-scoring engine (scoreListing, weights, why)
+    searchService.ts    ← orchestration (lifts into POST /api/search later)
+    types.ts            ← shared data model (interfaces + DataClient contract)
+    format.ts           ← display + graceful link-rot fallback helpers
   context/
-    SearchContext.jsx  ← criteria, results, saved IDs
-  components/          ← Layout, ListingCard, MatchScore, Rating, ...
-  views/               ← InputView, ResultsView, DetailView, SavedView, AccountView
-api/                   ← empty in Phase 0; serverless functions land here
+    SearchContext.tsx   ← criteria, results, saved IDs
+  components/           ← Layout, ListingCard, MatchScore, Rating, ...
+  views/                ← InputView, ResultsView, DetailView, SavedView, AccountView
+api/                    ← empty in Phase 0; serverless functions land here
 ```
 
 ### The one rule
 
 The UI never calls an external source directly — it only imports from
 `src/lib/dataClient`. Going live is a **config change** (`VITE_DATA_SOURCE=api`
-+ adding `apiClient.js`), not a rewrite.
++ adding `apiClient.ts`), not a rewrite. The `DataClient` interface in
+`types.ts` is the contract every implementation must satisfy — the compiler
+enforces that `apiClient.ts` matches `mockClient.ts` exactly.
 
 ## Data interfaces (mock now → production target)
 

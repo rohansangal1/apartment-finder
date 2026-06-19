@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useSearch } from '../context/SearchContext.jsx';
-import { getListings, getRating } from '../lib/dataClient/index.js';
-import Rating from '../components/Rating.jsx';
-import SaveButton from '../components/SaveButton.jsx';
-import { formatRent, formatBeds, resolveListingUrl } from '../lib/format.js';
+import { useSearch } from '../context/SearchContext';
+import { getListings, getRating } from '../lib/dataClient';
+import type { Listing } from '../lib/types';
+import Rating from '../components/Rating';
+import SaveButton from '../components/SaveButton';
+import { formatRent, formatBeds, resolveListingUrl } from '../lib/format';
 
 /**
  * Saved apartments. Stub for now: persists IDs to localStorage and rehydrates
@@ -13,7 +14,7 @@ import { formatRent, formatBeds, resolveListingUrl } from '../lib/format.js';
  */
 export default function SavedView() {
   const { savedIds } = useSearch();
-  const [listings, setListings] = useState(null);
+  const [listings, setListings] = useState<Listing[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -21,7 +22,7 @@ export default function SavedView() {
       const all = await getListings({ city: '' });
       const mine = all.filter((l) => savedIds.has(l.id));
       const withRatings = await Promise.all(
-        mine.map(async (l) => {
+        mine.map(async (l): Promise<Listing> => {
           const r = await getRating(l);
           return { ...l, ratingValue: r.value, ratingSource: r.source };
         })

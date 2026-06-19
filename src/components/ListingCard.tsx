@@ -1,18 +1,23 @@
 import { Link } from 'react-router-dom';
-import MatchScore from './MatchScore.jsx';
-import Rating from './Rating.jsx';
-import Tag from './Tag.jsx';
-import SaveButton from './SaveButton.jsx';
-import { formatRent, formatBeds, formatCommute, resolveListingUrl } from '../lib/format.js';
+import type { ScoredListing } from '../lib/types';
+import MatchScore from './MatchScore';
+import Rating from './Rating';
+import Tag from './Tag';
+import SaveButton from './SaveButton';
+import { formatRent, formatBeds, formatCommute, resolveListingUrl } from '../lib/format';
 
 /**
  * Results-view card for one scored listing. Shows neighborhood/address, rent,
  * beds, estimated commute, rating, match score, key tags, the "why it matched"
  * line, and a "View listing" button that opens the source site.
- *
- * @param {{ scored: import('../lib/types.js').ScoredListing, inPerson: boolean }} props
  */
-export default function ListingCard({ scored, inPerson }) {
+export default function ListingCard({
+  scored,
+  inPerson,
+}: {
+  scored: ScoredListing;
+  inPerson: boolean;
+}) {
   const { listing, matchScore, commuteMinutes, commuteMode, whyItMatched } = scored;
   const { url, isFallback } = resolveListingUrl(listing);
 

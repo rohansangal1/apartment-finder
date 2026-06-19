@@ -7,29 +7,23 @@
  *
  * Flow: getListings -> geocode work address -> getCommute per listing ->
  *       blend rating -> scoreListing -> rank.
- *
- * @typedef {import('./types.js').SearchCriteria} SearchCriteria
- * @typedef {import('./types.js').ScoredListing} ScoredListing
  */
-import { getListings, getCommute, getRating, geocode } from './dataClient/index.js';
-import { scoreListing, computeSubScores, explainMatch } from './scoring.js';
+import type { SearchCriteria, ScoredListing, GeoPoint } from './types';
+import { getListings, getCommute, getRating, geocode } from './dataClient';
+import { scoreListing, computeSubScores, explainMatch } from './scoring';
 
-/**
- * Run a full search and return ranked, scored listings (best first).
- * @param {SearchCriteria} criteria
- * @returns {Promise<ScoredListing[]>}
- */
-export async function runSearch(criteria) {
+/** Run a full search and return ranked, scored listings (best first). */
+export async function runSearch(criteria: SearchCriteria): Promise<ScoredListing[]> {
   const listings = await getListings(criteria);
 
   // Geocode the work origin once (only needed for in-person commuters).
-  let origin = null;
+  let origin: GeoPoint | null = null;
   if (criteria.inPerson && criteria.workAddress) {
     origin = await geocode(criteria.workAddress, criteria.city);
   }
 
   const scored = await Promise.all(
-    listings.map(async (listing) => {
+    listings.map(async (listing): Promise<ScoredListing> => {
       let commuteMinutes = 0;
       if (criteria.inPerson && origin) {
         const commute = await getCommute(
@@ -68,7 +62,7 @@ export async function runSearch(criteria) {
 }
 
 /** Sort comparators for the Results view toggle. */
-export const SORTERS = {
+export const SORTERS: Record<string, (a: ScoredListing, b: ScoredListing) => number> = {
   match: (a, b) => b.matchScore - a.matchScore,
   price: (a, b) => a.listing.rentMonthly - b.listing.rentMonthly,
   commute: (a, b) => a.commuteMinutes - b.commuteMinutes,

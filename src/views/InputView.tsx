@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSearch, DEFAULT_CRITERIA } from '../context/SearchContext.jsx';
+import { useSearch, DEFAULT_CRITERIA } from '../context/SearchContext';
+import type { SearchCriteria, CommuteMode, Weights } from '../lib/types';
 
 /** Cities we have (mock) inventory for. Real backend would discover this dynamically. */
 const CITIES = ['San Francisco', 'New York', 'Austin'];
-const COMMUTE_MODES = [
+const COMMUTE_MODES: Array<{ value: CommuteMode; label: string; icon: string }> = [
   { value: 'walk', label: 'Walk', icon: '🚶' },
   { value: 'transit', label: 'Transit', icon: '🚆' },
   { value: 'bike', label: 'Bike', icon: '🚲' },
   { value: 'drive', label: 'Drive', icon: '🚗' },
 ];
-const PRIORITIES = [
+const PRIORITIES: Array<{ key: keyof Weights; label: string; hint: string }> = [
   { key: 'commute', label: 'Short commute', hint: 'Closer to work' },
   { key: 'price', label: 'Low price', hint: 'More under budget' },
   { key: 'rating', label: 'High ratings', hint: 'Well-reviewed buildings' },
@@ -25,13 +26,13 @@ const PRIORITIES = [
 export default function InputView() {
   const navigate = useNavigate();
   const { criteria, search } = useSearch();
-  const [form, setForm] = useState(criteria || DEFAULT_CRITERIA);
+  const [form, setForm] = useState<SearchCriteria>(criteria || DEFAULT_CRITERIA);
 
-  const set = (patch) => setForm((f) => ({ ...f, ...patch }));
-  const setWeight = (key, value) =>
+  const set = (patch: Partial<SearchCriteria>) => setForm((f) => ({ ...f, ...patch }));
+  const setWeight = (key: keyof Weights, value: number) =>
     setForm((f) => ({ ...f, weights: { ...f.weights, [key]: value } }));
 
-  const onSubmit = (e) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     search(form);
     navigate('/results');
@@ -40,9 +41,7 @@ export default function InputView() {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <header className="pt-2">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Find your next place
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Find your next place</h1>
         <p className="mt-1 text-sm text-slate-500">
           Tell us your situation and we'll rank apartments by how well they fit — no endless scrolling.
         </p>
@@ -50,11 +49,7 @@ export default function InputView() {
 
       {/* City */}
       <Field label="City">
-        <select
-          value={form.city}
-          onChange={(e) => set({ city: e.target.value })}
-          className="input"
-        >
+        <select value={form.city} onChange={(e) => set({ city: e.target.value })} className="input">
           {CITIES.map((c) => (
             <option key={c} value={c}>
               {c}
@@ -66,22 +61,17 @@ export default function InputView() {
       {/* Work style */}
       <Field label="Where do you work?">
         <div className="grid grid-cols-2 gap-2">
-          <Segment
-            active={form.inPerson}
-            onClick={() => set({ inPerson: true })}
-            label="In person"
-          />
-          <Segment
-            active={!form.inPerson}
-            onClick={() => set({ inPerson: false })}
-            label="Remote"
-          />
+          <Segment active={form.inPerson} onClick={() => set({ inPerson: true })} label="In person" />
+          <Segment active={!form.inPerson} onClick={() => set({ inPerson: false })} label="Remote" />
         </div>
       </Field>
 
       {/* Work address (in-person only) */}
       {form.inPerson && (
-        <Field label="Work address" hint="We estimate commute from here. Try 'Salesforce Tower' or 'Midtown'.">
+        <Field
+          label="Work address"
+          hint="We estimate commute from here. Try 'Salesforce Tower' or 'Midtown'."
+        >
           <input
             type="text"
             value={form.workAddress}
@@ -181,7 +171,7 @@ export default function InputView() {
   );
 }
 
-function Field({ label, hint, children }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <label className="block">
       <span className="text-sm font-semibold text-slate-700">{label}</span>
@@ -191,7 +181,15 @@ function Field({ label, hint, children }) {
   );
 }
 
-function Segment({ active, onClick, label }) {
+function Segment({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: ReactNode;
+}) {
   return (
     <button
       type="button"

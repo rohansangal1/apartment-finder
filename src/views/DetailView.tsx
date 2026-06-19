@@ -1,20 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useSearch } from '../context/SearchContext.jsx';
-import { getListings, getCommute, getRating, getReviews, geocode } from '../lib/dataClient/index.js';
-import MatchScore from '../components/MatchScore.jsx';
-import Rating from '../components/Rating.jsx';
-import Tag from '../components/Tag.jsx';
-import SaveButton from '../components/SaveButton.jsx';
-import {
-  formatRent,
-  formatBeds,
-  formatCommute,
-  resolveListingUrl,
-  sourceLabel,
-} from '../lib/format.js';
+import { useSearch } from '../context/SearchContext';
+import { getListings, getCommute, getRating, getReviews, geocode } from '../lib/dataClient';
+import type { Listing, Rating as RatingType, Review, CommuteMode } from '../lib/types';
+import MatchScore from '../components/MatchScore';
+import Rating from '../components/Rating';
+import Tag from '../components/Tag';
+import SaveButton from '../components/SaveButton';
+import { formatRent, formatBeds, resolveListingUrl, sourceLabel } from '../lib/format';
 
-const ALL_MODES = ['walk', 'transit', 'bike', 'drive'];
+const ALL_MODES: CommuteMode[] = ['walk', 'transit', 'bike', 'drive'];
 
 /**
  * Full listing detail: metadata, commute breakdown across ALL modes (not just
@@ -23,28 +18,32 @@ const ALL_MODES = ['walk', 'transit', 'bike', 'drive'];
  * (so the match score matches the Results view) and lazily fetches the rest.
  */
 export default function DetailView() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { results, criteria } = useSearch();
 
   const fromResults = results.find((r) => r.listing.id === id);
-  const [listing, setListing] = useState(fromResults?.listing || null);
-  const [matchScore] = useState(fromResults?.matchScore ?? null);
-  const [commutes, setCommutes] = useState(null);
-  const [rating, setRating] = useState(
-    fromResults ? { value: fromResults.listing.ratingValue, source: fromResults.listing.ratingSource } : null
+  const [listing, setListing] = useState<Listing | null>(fromResults?.listing ?? null);
+  const [matchScore] = useState<number | null>(fromResults?.matchScore ?? null);
+  const [commutes, setCommutes] = useState<Record<CommuteMode, number> | null>(null);
+  const [rating, setRating] = useState<RatingType | null>(
+    fromResults
+      ? { value: fromResults.listing.ratingValue, source: fromResults.listing.ratingSource }
+      : null
   );
-  const [reviews, setReviews] = useState(null);
+  const [reviews, setReviews] = useState<Review[] | null>(null);
   const [loading, setLoading] = useState(!fromResults);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
+      if (!id) return;
+
       // If we didn't arrive from Results (e.g. deep link / refresh), fetch the listing.
       let l = listing;
       if (!l) {
         const all = await getListings({ city: '' });
-        l = all.find((x) => x.id === id) || null;
+        l = all.find((x) => x.id === id) ?? null;
         if (cancelled) return;
         setListing(l);
         if (l) {
@@ -59,12 +58,12 @@ export default function DetailView() {
       if (criteria.inPerson && criteria.workAddress) {
         const origin = await geocode(criteria.workAddress, criteria.city);
         const entries = await Promise.all(
-          ALL_MODES.map(async (mode) => {
-            const c = await getCommute(origin, { lat: l.lat, lng: l.lng }, mode);
+          ALL_MODES.map(async (mode): Promise<[CommuteMode, number]> => {
+            const c = await getCommute(origin, { lat: l!.lat, lng: l!.lng }, mode);
             return [mode, c.minutes];
           })
         );
-        if (!cancelled) setCommutes(Object.fromEntries(entries));
+        if (!cancelled) setCommutes(Object.fromEntries(entries) as Record<CommuteMode, number>);
       }
 
       const rv = await getReviews(id);
@@ -158,9 +157,7 @@ export default function DetailView() {
 
       {/* Commute breakdown */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">
-          Commute to work
-        </h2>
+        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Commute to work</h2>
         {!criteria.inPerson ? (
           <p className="mt-2 text-sm text-slate-500">
             You searched as a remote worker, so commute isn't factored into your match.
@@ -177,9 +174,7 @@ export default function DetailView() {
               <div
                 key={mode}
                 className={`rounded-lg border p-3 text-center ${
-                  mode === criteria.commuteMode
-                    ? 'border-brand-300 bg-brand-50'
-                    : 'border-slate-200'
+                  mode === criteria.commuteMode ? 'border-brand-300 bg-brand-50' : 'border-slate-200'
                 }`}
               >
                 <div className="text-lg font-bold text-slate-900">{commutes[mode]}</div>
@@ -198,9 +193,7 @@ export default function DetailView() {
 
       {/* Reviews */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">
-          Resident reviews
-        </h2>
+        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Resident reviews</h2>
         {reviews == null ? (
           <div className="mt-3 h-16 animate-pulse rounded-lg bg-slate-100" />
         ) : reviews.length === 0 ? (
@@ -233,7 +226,7 @@ export default function DetailView() {
   );
 }
 
-function Stat({ label, value }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-slate-50 p-3">
       <div className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</div>

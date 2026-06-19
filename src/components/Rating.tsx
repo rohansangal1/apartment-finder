@@ -1,10 +1,20 @@
-import { ratingSourceLabel } from '../lib/format.js';
+import { ratingSourceLabel } from '../lib/format';
 
 /**
  * Star rating out of 5. If value is null we show "Not enough info" — we never
  * fabricate a number when data is too sparse.
  */
-export default function Rating({ value, source, showSource = false, size = 'sm' }) {
+export default function Rating({
+  value,
+  source,
+  showSource = false,
+  size = 'sm',
+}: {
+  value: number | null;
+  source: string | null;
+  showSource?: boolean;
+  size?: 'sm' | 'md';
+}) {
   if (value == null) {
     return (
       <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-400">
@@ -22,12 +32,7 @@ export default function Rating({ value, source, showSource = false, size = 'sm' 
     <span className="inline-flex items-center gap-1.5">
       <span className="inline-flex" aria-hidden="true">
         {[0, 1, 2, 3, 4].map((i) => (
-          <StarIcon
-            key={i}
-            className={dim}
-            filled={i < full}
-            half={i === full && hasHalf}
-          />
+          <StarIcon key={i} className={dim} filled={i < full} half={i === full && hasHalf} />
         ))}
       </span>
       <span className="text-sm font-semibold text-slate-700">{value.toFixed(1)}</span>
@@ -38,7 +43,15 @@ export default function Rating({ value, source, showSource = false, size = 'sm' 
   );
 }
 
-function StarIcon({ className, filled, half }) {
+function StarIcon({
+  className,
+  filled,
+  half,
+}: {
+  className: string;
+  filled: boolean;
+  half?: boolean;
+}) {
   const id = `half-${Math.random().toString(36).slice(2)}`;
   return (
     <svg className={className} viewBox="0 0 20 20">

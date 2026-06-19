@@ -1,5 +1,11 @@
 /** Circular 0–100 match-score badge, color-graded by strength. */
-export default function MatchScore({ score, size = 'md' }) {
+export default function MatchScore({
+  score,
+  size = 'md',
+}: {
+  score: number;
+  size?: 'sm' | 'md' | 'lg';
+}) {
   const color =
     score >= 80
       ? 'bg-emerald-100 text-emerald-700 ring-emerald-200'

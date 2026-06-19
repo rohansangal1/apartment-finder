@@ -8,12 +8,18 @@
  * search (a taste of the "returning users skip re-entering their situation"
  * payoff that defaults/preferences deliver fully in Phase 2).
  */
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { runSearch } from '../lib/searchService.js';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from 'react';
+import type { SearchCriteria, ScoredListing } from '../lib/types';
+import { runSearch } from '../lib/searchService';
 
-/** @typedef {import('../lib/types.js').SearchCriteria} SearchCriteria */
-
-export const DEFAULT_CRITERIA = {
+export const DEFAULT_CRITERIA: SearchCriteria = {
   city: 'San Francisco',
   inPerson: true,
   workAddress: '',
@@ -25,18 +31,33 @@ export const DEFAULT_CRITERIA = {
 
 const SAVED_KEY = 'nestle.saved.v1';
 
-const SearchContext = createContext(null);
+type SearchStatus = 'idle' | 'loading' | 'ready' | 'error';
 
-export function SearchProvider({ children }) {
-  const [criteria, setCriteria] = useState(DEFAULT_CRITERIA);
-  const [results, setResults] = useState([]);
-  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'ready' | 'error'
-  const [error, setError] = useState(null);
+interface SearchContextValue {
+  criteria: SearchCriteria;
+  setCriteria: React.Dispatch<React.SetStateAction<SearchCriteria>>;
+  results: ScoredListing[];
+  status: SearchStatus;
+  error: string | null;
+  hasSearched: boolean;
+  search: (nextCriteria: SearchCriteria) => Promise<void>;
+  savedIds: Set<string>;
+  toggleSaved: (id: string) => void;
+  isSaved: (id: string) => boolean;
+}
+
+const SearchContext = createContext<SearchContextValue | null>(null);
+
+export function SearchProvider({ children }: { children: ReactNode }) {
+  const [criteria, setCriteria] = useState<SearchCriteria>(DEFAULT_CRITERIA);
+  const [results, setResults] = useState<ScoredListing[]>([]);
+  const [status, setStatus] = useState<SearchStatus>('idle');
+  const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const [savedIds, setSavedIds] = useState(() => {
+  const [savedIds, setSavedIds] = useState<Set<string>>(() => {
     try {
-      return new Set(JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'));
+      return new Set(JSON.parse(localStorage.getItem(SAVED_KEY) || '[]') as string[]);
     } catch {
       return new Set();
     }
@@ -50,7 +71,7 @@ export function SearchProvider({ children }) {
     }
   }, [savedIds]);
 
-  const search = useCallback(async (nextCriteria) => {
+  const search = useCallback(async (nextCriteria: SearchCriteria) => {
     setCriteria(nextCriteria);
     setStatus('loading');
     setError(null);
@@ -61,20 +82,21 @@ export function SearchProvider({ children }) {
       setStatus('ready');
     } catch (e) {
       console.error(e);
-      setError(e?.message || 'Something went wrong running your search.');
+      setError(e instanceof Error ? e.message : 'Something went wrong running your search.');
       setStatus('error');
     }
   }, []);
 
-  const toggleSaved = useCallback((id) => {
+  const toggleSaved = useCallback((id: string) => {
     setSavedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);
 
-  const value = {
+  const value: SearchContextValue = {
     criteria,
     setCriteria,
     results,
@@ -84,13 +106,13 @@ export function SearchProvider({ children }) {
     search,
     savedIds,
     toggleSaved,
-    isSaved: (id) => savedIds.has(id),
+    isSaved: (id: string) => savedIds.has(id),
   };
 
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
 }
 
-export function useSearch() {
+export function useSearch(): SearchContextValue {
   const ctx = useContext(SearchContext);
   if (!ctx) throw new Error('useSearch must be used within <SearchProvider>');
   return ctx;
