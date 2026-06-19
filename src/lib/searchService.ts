@@ -9,11 +9,16 @@
  *       blend rating -> scoreListing -> rank.
  */
 import type { SearchCriteria, ScoredListing, GeoPoint } from './types';
-import { getListings, getCommute, getRating, geocode } from './dataClient';
+import { getListings, getCommute, getRating, geocode, serverSearch } from './dataClient';
 import { scoreListing, computeSubScores, explainMatch } from './scoring';
 
 /** Run a full search and return ranked, scored listings (best first). */
 export async function runSearch(criteria: SearchCriteria): Promise<ScoredListing[]> {
+  // When a one-shot server endpoint exists (api source), let it do the whole
+  // orchestration in a single round-trip — scoring runs server-side with the
+  // same pure engine, so results are identical. Mock composes locally below.
+  if (serverSearch) return serverSearch(criteria);
+
   const listings = await getListings(criteria);
 
   // Geocode the work origin once (only needed for in-person commuters).

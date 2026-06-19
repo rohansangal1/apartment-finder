@@ -5,33 +5,25 @@
  * only ever imports from here. Switching from mock data to real APIs is a CONFIG
  * change, not a rewrite:
  *
- *   Phase 0 (now):   VITE_DATA_SOURCE=mock  -> mockClient (in-browser fixtures)
- *   Phase 1 (later): VITE_DATA_SOURCE=api   -> apiClient (calls /api serverless
- *                    functions that hold the secret keys + caching)
+ *   VITE_DATA_SOURCE=mock  -> mockClient (in-browser fixtures)
+ *   VITE_DATA_SOURCE=api   -> apiClient  (calls /api serverless functions that
+ *                            hold the secret keys + caching)
  *
- * apiClient.ts doesn't exist yet — that's the point. When it does, it exports the
- * same DataClient shape and we flip the env var. Nothing in /views or
- * /components changes.
+ * Both implementations satisfy the same DataClient interface, so nothing in
+ * /views or /components changes between phases.
  */
-import type { DataClient } from '../types';
+import type { DataClient, SearchCriteria, ScoredListing } from '../types';
 import { mockClient } from './mockClient';
+import { apiClient, search as apiSearch } from './apiClient';
 
 const SOURCE: string = import.meta.env?.VITE_DATA_SOURCE || 'mock';
 
-/**
- * Resolve the active implementation. Today only 'mock' exists; 'api' is wired to
- * throw a clear error until apiClient.ts is added, so a misconfigured env fails
- * loudly instead of silently doing nothing.
- */
 function resolveClient(): DataClient {
   switch (SOURCE) {
     case 'mock':
       return mockClient;
     case 'api':
-      throw new Error(
-        'VITE_DATA_SOURCE=api but apiClient.ts is not implemented yet (Phase 1). ' +
-          'Add src/lib/dataClient/apiClient.ts satisfying the DataClient interface.'
-      );
+      return apiClient;
     default:
       throw new Error(`Unknown VITE_DATA_SOURCE: "${SOURCE}"`);
   }
@@ -44,6 +36,15 @@ export const getCommute: DataClient['getCommute'] = (...args) => client.getCommu
 export const getRating: DataClient['getRating'] = (...args) => client.getRating(...args);
 export const geocode: DataClient['geocode'] = (...args) => client.geocode(...args);
 export const getReviews: DataClient['getReviews'] = (...args) => client.getReviews(...args);
+
+/**
+ * One-shot server search. Defined only for the 'api' source, where the entire
+ * orchestration (listings → commute → ratings → score → rank) runs in a single
+ * round-trip behind POST /api/search. searchService prefers this when present to
+ * avoid re-fetching per method. `null` on mock, where composing locally is free.
+ */
+export const serverSearch: ((criteria: SearchCriteria) => Promise<ScoredListing[]>) | null =
+  SOURCE === 'api' ? apiSearch : null;
 
 /** Active source name, surfaced in the UI footer so it's obvious we're on mock data. */
 export const DATA_SOURCE = SOURCE;

@@ -82,4 +82,20 @@ neutral 60, never zero; missing data is never fabricated.
 Static site on Vercel or Netlify. `vercel.json` includes the SPA rewrite. No
 secrets, nothing to persist.
 
-See [`api/README.md`](api/README.md) for the Phase 1/2 backend plan.
+## Phase 1 — real APIs (built, needs keys)
+
+The serverless layer is implemented in [`api/`](api/README.md): `POST /api/search`
+(orchestration) plus `/api/geocode`, `/api/commute`, `/api/rating`, with caching,
+per-IP rate limiting, and a daily budget circuit breaker. Providers: RentCast
+(listings), TravelTime (geocode + commute), Google Places (ratings).
+
+To switch the app from mock → live:
+
+1. Add the provider keys in Vercel project settings (see `.env.example`).
+2. Set `VITE_DATA_SOURCE=api`.
+3. Deploy (or run `vercel dev` locally).
+
+No view/component changes — `apiClient.ts` satisfies the same `DataClient`
+interface as `mockClient.ts`, and the server reuses the same `scoring.ts`.
+
+See [`api/README.md`](api/README.md) for endpoint details and the Phase 2 plan.
