@@ -4,11 +4,10 @@
  * Every listing carries `source` and `listingUrl` so multi-source aggregation
  * and deep-linking-out are additive later — no schema change required.
  * Intentionally minimal metadata: the app links OUT for the full listing.
- *
- * @typedef {import('../types.js').Listing} Listing
- * @type {Listing[]}
  */
-export const MOCK_LISTINGS = [
+import type { Listing } from '../types';
+
+export const MOCK_LISTINGS: Listing[] = [
   // ---- San Francisco ----
   {
     id: 'sf-001',

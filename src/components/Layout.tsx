@@ -1,12 +1,13 @@
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { DATA_SOURCE } from '../lib/dataClient/index.js';
+import type { ReactNode } from 'react';
+import { DATA_SOURCE } from '../lib/dataClient';
 
 /**
  * App shell: a top bar (logo + desktop nav) and a mobile bottom tab bar. Most
  * apartment hunting happens on a phone, so navigation is thumb-reachable on
  * small screens and inline on larger ones.
  */
-export default function Layout({ children }) {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-full flex-col">
       <TopBar />
@@ -17,7 +18,14 @@ export default function Layout({ children }) {
   );
 }
 
-const NAV = [
+interface NavItem {
+  to: string;
+  label: string;
+  icon: (props: { className?: string }) => JSX.Element;
+  end?: boolean;
+}
+
+const NAV: NavItem[] = [
   { to: '/', label: 'Search', icon: SearchIcon, end: true },
   { to: '/results', label: 'Results', icon: ListIcon },
   { to: '/saved', label: 'Saved', icon: HeartIcon },
@@ -105,7 +113,7 @@ function HomeGlyph() {
     </svg>
   );
 }
-function SearchIcon({ className }) {
+function SearchIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="7" />
@@ -113,21 +121,21 @@ function SearchIcon({ className }) {
     </svg>
   );
 }
-function ListIcon({ className }) {
+function ListIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
     </svg>
   );
 }
-function HeartIcon({ className }) {
+function HeartIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 21s-7.5-4.6-10-9.2C.5 8.5 2 5 5.5 5 7.6 5 9 6.2 12 9c3-2.8 4.4-4 6.5-4C22 5 23.5 8.5 22 11.8 19.5 16.4 12 21 12 21z" />
     </svg>
   );
 }
-function UserIcon({ className }) {
+function UserIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="4" />

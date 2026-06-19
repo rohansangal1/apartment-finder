@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout.jsx';
-import InputView from './views/InputView.jsx';
-import ResultsView from './views/ResultsView.jsx';
-import DetailView from './views/DetailView.jsx';
-import SavedView from './views/SavedView.jsx';
-import AccountView from './views/AccountView.jsx';
+import Layout from './components/Layout';
+import InputView from './views/InputView';
+import ResultsView from './views/ResultsView';
+import DetailView from './views/DetailView';
+import SavedView from './views/SavedView';
+import AccountView from './views/AccountView';
 
 /** Route table. Each view is its own screen — never everything on one page. */
 export default function App() {

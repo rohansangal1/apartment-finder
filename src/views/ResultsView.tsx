@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { useSearch } from '../context/SearchContext.jsx';
-import { SORTERS } from '../lib/searchService.js';
-import ListingCard from '../components/ListingCard.jsx';
+import { useSearch } from '../context/SearchContext';
+import { SORTERS } from '../lib/searchService';
+import ListingCard from '../components/ListingCard';
 
 const SORT_OPTIONS = [
   { value: 'match', label: 'Best match' },
@@ -36,11 +36,7 @@ export default function ResultsView() {
 
   if (status === 'error') {
     return (
-      <EmptyState
-        title="Something went wrong"
-        body={error || 'Please try your search again.'}
-        cta
-      />
+      <EmptyState title="Something went wrong" body={error || 'Please try your search again.'} cta />
     );
   }
 
@@ -62,7 +58,9 @@ export default function ResultsView() {
             {sorted.length} matches in {criteria.city}
           </h1>
           <p className="text-xs text-slate-500">
-            {criteria.inPerson ? 'Ranked by your priorities + commute' : 'Ranked by your priorities'}
+            {criteria.inPerson
+              ? 'Ranked by your priorities + commute'
+              : 'Ranked by your priorities'}
           </p>
         </div>
         <label className="shrink-0">
@@ -107,7 +105,7 @@ function LoadingState() {
   );
 }
 
-function EmptyState({ title, body, cta }) {
+function EmptyState({ title, body, cta }: { title: string; body: ReactNode; cta?: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <h2 className="text-lg font-semibold text-slate-800">{title}</h2>

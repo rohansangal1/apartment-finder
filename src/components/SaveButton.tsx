@@ -1,7 +1,7 @@
-import { useSearch } from '../context/SearchContext.jsx';
+import { useSearch } from '../context/SearchContext';
 
 /** Heart toggle to save/unsave a listing (Phase 0: localStorage; Phase 2: per-user DB). */
-export default function SaveButton({ id, className = '' }) {
+export default function SaveButton({ id, className = '' }: { id: string; className?: string }) {
   const { isSaved, toggleSaved } = useSearch();
   const saved = isSaved(id);
 

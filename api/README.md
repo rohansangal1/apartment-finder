@@ -31,7 +31,7 @@ Plus: per-IP **rate limiting** and a daily **budget guard / circuit breaker**.
 
 The UI only ever imports from `src/lib/dataClient`. To go live:
 
-1. Add `src/lib/dataClient/apiClient.js` exporting the same
+1. Add `src/lib/dataClient/apiClient.ts` exporting the same
    `getListings / getCommute / getRating / geocode` methods, but calling these
    endpoints via `fetch`.
 2. Set `VITE_DATA_SOURCE=api`.

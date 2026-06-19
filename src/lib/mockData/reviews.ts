@@ -3,11 +3,10 @@
  * lean on scraped/API sources — the schema supports the cold-start handoff to
  * platform reviews. `livedHereVerified` marks the high-trust reviews from users
  * who found their place through the platform.
- *
- * @typedef {import('../types.js').Review} Review
- * @type {Review[]}
  */
-export const MOCK_REVIEWS = [
+import type { Review } from '../types';
+
+export const MOCK_REVIEWS: Review[] = [
   {
     id: 'rev-001',
     listingId: 'sf-001',
