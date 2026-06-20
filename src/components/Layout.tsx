@@ -34,7 +34,7 @@ const NAV: NavItem[] = [
 
 function TopBar() {
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-ink/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">
@@ -66,7 +66,7 @@ function TopBar() {
 function MobileTabBar() {
   const { pathname } = useLocation();
   return (
-    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white sm:hidden">
+    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-ink sm:hidden">
       <div className="mx-auto flex max-w-3xl items-stretch justify-around">
         {NAV.map((item) => {
           const active = item.end ? pathname === item.to : pathname.startsWith(item.to);

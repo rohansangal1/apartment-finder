@@ -12,9 +12,9 @@
  * Both implementations satisfy the same DataClient interface, so nothing in
  * /views or /components changes between phases.
  */
-import type { DataClient, SearchCriteria, ScoredListing } from '../types';
+import type { DataClient, SearchCriteria, ScoredListing, AddressSuggestion } from '../types';
 import { mockClient } from './mockClient';
-import { apiClient, search as apiSearch } from './apiClient';
+import { apiClient, search as apiSearch, autocompleteAddress as apiAutocomplete } from './apiClient';
 
 const SOURCE: string = import.meta.env?.VITE_DATA_SOURCE || 'mock';
 
@@ -45,6 +45,14 @@ export const getReviews: DataClient['getReviews'] = (...args) => client.getRevie
  */
 export const serverSearch: ((criteria: SearchCriteria) => Promise<ScoredListing[]>) | null =
   SOURCE === 'api' ? apiSearch : null;
+
+/**
+ * Address type-ahead. Only available on the 'api' source (it proxies Google
+ * Places Autocomplete server-side). `null` on mock — the UI then falls back to a
+ * plain text input with no suggestions.
+ */
+export const autocompleteAddress: ((input: string) => Promise<AddressSuggestion[]>) | null =
+  SOURCE === 'api' ? apiAutocomplete : null;
 
 /** Active source name, surfaced in the UI footer so it's obvious we're on mock data. */
 export const DATA_SOURCE = SOURCE;

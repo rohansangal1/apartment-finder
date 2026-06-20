@@ -28,7 +28,7 @@ export default function MatchScore({
       title={`Match score: ${score} out of 100`}
       aria-label={`Match score ${score} out of 100`}
     >
-      <span className="leading-none">{score}</span>
+      <span className="font-mono leading-none tabular-nums">{score}</span>
     </div>
   );
 }

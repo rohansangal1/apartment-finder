@@ -21,6 +21,7 @@ import type {
   Review,
   DataClient,
   ScoredListing,
+  AddressSuggestion,
 } from '../types';
 
 const BASE = import.meta.env?.VITE_API_BASE_URL || '';
@@ -89,6 +90,14 @@ export async function getRating(building: Listing): Promise<Rating> {
 
 export async function geocode(address: string): Promise<GeoPoint> {
   return getJson<GeoPoint>(`/api/geocode?address=${encodeURIComponent(address)}`);
+}
+
+/** Address type-ahead suggestions for the work-address field. */
+export async function autocompleteAddress(input: string): Promise<AddressSuggestion[]> {
+  const { suggestions } = await getJson<{ suggestions: AddressSuggestion[] }>(
+    `/api/places-autocomplete?input=${encodeURIComponent(input)}`
+  );
+  return suggestions;
 }
 
 export async function getReviews(_listingId: string): Promise<Review[]> {

@@ -103,7 +103,7 @@ export default function DetailView() {
         ← Back to results
       </Link>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-ink p-5 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-xl font-bold text-slate-900">{listing.neighborhood}</h1>
@@ -159,7 +159,7 @@ export default function DetailView() {
       </div>
 
       {/* Commute breakdown */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-ink p-5 shadow-sm">
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Commute to work</h2>
         {!criteria.inPerson ? (
           <p className="mt-2 text-sm text-slate-500">
@@ -180,7 +180,7 @@ export default function DetailView() {
                   mode === criteria.commuteMode ? 'border-brand-300 bg-brand-50' : 'border-slate-200'
                 }`}
               >
-                <div className="text-lg font-bold text-slate-900">{commutes[mode]}</div>
+                <div className="data text-lg font-bold text-slate-900">{commutes[mode]}</div>
                 <div className="text-xs text-slate-500">min · {mode}</div>
               </div>
             ))}
@@ -188,14 +188,14 @@ export default function DetailView() {
         )}
         {criteria.inPerson && criteria.workAddress && (
           <p className="mt-3 text-xs text-slate-400">
-            From {criteria.workAddress}. Estimates are mocked in Phase 0; production uses TravelTime
-            (transit-aware) with a Google Routes fallback.
+            From {criteria.workAddress}. Estimates are mocked in Phase 0; production uses the Google
+            Routes API (transit-aware).
           </p>
         )}
       </section>
 
       {/* Reviews */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-ink p-5 shadow-sm">
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Resident reviews</h2>
         {reviews == null ? (
           <div className="mt-3 h-16 animate-pulse rounded-lg bg-slate-100" />

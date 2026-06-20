@@ -70,7 +70,7 @@ export default function SavedView() {
             return (
               <li
                 key={l.id}
-                className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-ink p-4 shadow-sm"
               >
                 <div className="min-w-0 flex-1">
                   <Link

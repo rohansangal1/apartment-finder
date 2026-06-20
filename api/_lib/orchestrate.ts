@@ -1,8 +1,8 @@
 /**
  * Server-side search orchestration — the paid mirror of src/lib/searchService.ts.
  * Doing this server-side hides keys and avoids many browser round-trips:
- *   listings (RentCast) → geocode origin (TravelTime) → commute per listing
- *   (TravelTime) → blended rating (Places + first-party) → score → rank.
+ *   listings (RentCast) → geocode origin (Google) → commute per listing
+ *   (Google Routes) → blended rating (Places + first-party) → score → rank.
  *
  * Reuses the SAME pure scoring engine the client uses (src/lib/scoring.ts), so
  * scores are identical regardless of where they're computed.
