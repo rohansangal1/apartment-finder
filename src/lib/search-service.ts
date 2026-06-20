@@ -9,7 +9,7 @@
  *       blend rating -> scoreListing -> rank.
  */
 import type { SearchCriteria, ScoredListing, GeoPoint } from './types';
-import { getListings, getCommute, getRating, geocode, serverSearch } from './dataClient';
+import { getListings, getCommute, getRating, geocode, serverSearch } from './data-client';
 import { scoreListing, computeSubScores, explainMatch } from './scoring';
 
 /** Run a full search and return ranked, scored listings (best first). */

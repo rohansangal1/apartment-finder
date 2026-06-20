@@ -16,9 +16,9 @@ import type {
   Review,
   DataClient,
 } from '../types';
-import { MOCK_LISTINGS } from '../mockData/listings';
-import { MOCK_REVIEWS } from '../mockData/reviews';
-import { CITY_CENTROIDS, KNOWN_ADDRESSES } from '../mockData/geo';
+import { MOCK_LISTINGS } from '../mock-data/listings';
+import { MOCK_REVIEWS } from '../mock-data/reviews';
+import { CITY_CENTROIDS, KNOWN_ADDRESSES } from '../mock-data/geo';
 
 /** Simulate network latency so loading states are exercised in the prototype. */
 const delay = (ms = 350): Promise<void> => new Promise((r) => setTimeout(r, ms));

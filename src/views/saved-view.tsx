@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useUserData } from '../context/UserDataContext';
-import { getListings, getRating } from '../lib/dataClient';
+import { useUserData } from '../context/user-data-context';
+import { getListings, getRating } from '../lib/data-client';
 import type { Listing } from '../lib/types';
-import Rating from '../components/Rating';
-import SaveButton from '../components/SaveButton';
+import Rating from '../components/rating';
+import SaveButton from '../components/save-button';
 import { formatRent, formatBeds, resolveListingUrl } from '../lib/format';
 
 /**

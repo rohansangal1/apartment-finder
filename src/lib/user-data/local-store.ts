@@ -6,7 +6,7 @@
  */
 import type { Review, NewReview, UserPreferences } from '../types';
 import type { UserStore } from './types';
-import { getReviews as getMockReviews } from '../dataClient';
+import { getReviews as getMockReviews } from '../data-client';
 
 const SAVED_KEY = 'nestle.saved.v1';
 const PREFS_KEY = 'nestle.prefs.v1';

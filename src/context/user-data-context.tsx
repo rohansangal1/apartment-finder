@@ -17,11 +17,11 @@ import {
   type ReactNode,
 } from 'react';
 import type { Review, NewReview, UserPreferences } from '../lib/types';
-import type { UserStore } from '../lib/userData/types';
-import { localStore } from '../lib/userData/localStore';
-import { createSupabaseStore } from '../lib/userData/supabaseStore';
+import type { UserStore } from '../lib/user-data/types';
+import { localStore } from '../lib/user-data/local-store';
+import { createSupabaseStore } from '../lib/user-data/supabase-store';
 import { supabase } from '../lib/supabase';
-import { useAuth } from './AuthContext';
+import { useAuth } from './auth-context';
 
 interface UserDataContextValue {
   savedIds: Set<string>;

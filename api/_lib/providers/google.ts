@@ -106,7 +106,7 @@ export async function commute(
  */
 export async function autocomplete(input: string): Promise<AddressSuggestion[]> {
   const q = input.trim();
-  if (q.length < 3) return [];
+  if (!q) return [];
   const apiKey = requireEnv('GOOGLE_MAPS_API_KEY');
 
   return cached(`autocomplete:${hashKey(q.toLowerCase())}`, TTL.autocomplete, async () => {
