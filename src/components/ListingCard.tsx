@@ -22,7 +22,7 @@ export default function ListingCard({
   const { url, isFallback } = resolveListingUrl(listing);
 
   return (
-    <div className="relative rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+    <div className="relative rounded-2xl border border-slate-200 bg-ink p-4 shadow-sm transition hover:shadow-md">
       <div className="flex items-start gap-3">
         <MatchScore score={matchScore} />
 
@@ -41,13 +41,15 @@ export default function ListingCard({
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-            <span className="font-semibold text-slate-900">{formatRent(listing.rentMonthly)}</span>
+            <span className="data font-semibold text-slate-900">
+              {formatRent(listing.rentMonthly)}
+            </span>
             <span className="text-slate-400">·</span>
-            <span className="text-slate-600">{formatBeds(listing.bedrooms)}</span>
+            <span className="data text-slate-600">{formatBeds(listing.bedrooms)}</span>
             {inPerson && (
               <>
                 <span className="text-slate-400">·</span>
-                <span className="text-slate-600">
+                <span className="data text-slate-600">
                   {formatCommute(commuteMinutes, commuteMode)}
                 </span>
               </>

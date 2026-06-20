@@ -104,6 +104,14 @@ export interface NewReview {
   livedHereVerified: boolean;
 }
 
+/** A single address autocomplete suggestion (Google Places Autocomplete). */
+export interface AddressSuggestion {
+  /** Human-readable address shown in the dropdown and used as the work address. */
+  description: string;
+  /** Google place id — kept for future use (e.g. precise place details). */
+  placeId: string;
+}
+
 /** The interface every dataClient implementation (mock now, api later) satisfies. */
 export interface DataClient {
   getListings(criteria: Partial<SearchCriteria>): Promise<Listing[]>;

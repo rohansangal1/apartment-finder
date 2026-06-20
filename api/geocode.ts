@@ -1,6 +1,6 @@
 /**
  * GET /api/geocode?address=...  → { lat, lng }
- * Thin, key-protected wrapper over TravelTime geocoding (cached ~forever).
+ * Thin, key-protected wrapper over Google geocoding (cached ~forever).
  */
 import { withHandler } from './_lib/handler';
 import { HttpError } from './_lib/env';

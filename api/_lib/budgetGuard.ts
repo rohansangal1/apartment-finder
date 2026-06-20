@@ -13,10 +13,10 @@ import { DAILY_BUDGET_USD, HttpError } from './env';
 /** Rough per-call cost estimates (USD). Tune to each provider's pricing. */
 export const CALL_COST = {
   rentcast: 0.01,
-  traveltime: 0.005,
   routes: 0.005, // Google Routes API
   places: 0.017,
   geocode: 0.005,
+  autocomplete: 0.003,
 } as const;
 
 export type CostKey = keyof typeof CALL_COST;

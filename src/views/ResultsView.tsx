@@ -68,7 +68,7 @@ export default function ResultsView() {
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-700 shadow-sm"
+            className="rounded-lg border border-slate-200 bg-ink px-2.5 py-1.5 text-sm font-medium text-slate-700 shadow-sm"
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>

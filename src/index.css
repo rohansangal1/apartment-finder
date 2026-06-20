@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html,
@@ -13,7 +13,7 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-ink-950 text-paper antialiased;
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -24,6 +24,16 @@ body {
 
 @layer components {
   .input {
-    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+    @apply w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2 text-sm text-paper shadow-sm outline-none transition placeholder:text-paper-muted/60 focus:border-teal-400 focus:ring-2 focus:ring-teal-600/30;
+  }
+
+  /* Standard dark card surface. */
+  .card {
+    @apply rounded-xl border border-ink-600 bg-ink-800 shadow-sm;
+  }
+
+  /* All data/numbers (prices, commute times, beds) render monospace. */
+  .data {
+    @apply font-mono tabular-nums;
   }
 }

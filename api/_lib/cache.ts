@@ -25,6 +25,7 @@ export const TTL = {
   commute: 60 * 60 * 24 * 14, // 2 weeks
   rating: 60 * 60 * 24 * 7, // 1 week
   listings: 60 * 60 * 6, // 6 hours (inventory turns over)
+  autocomplete: 60 * 60 * 24, // 1 day (address suggestions are stable)
 } as const;
 
 class RedisCache implements Cache {

@@ -3,8 +3,8 @@
 Why a backend exists here (and not in Phase 0): **secret keys** can't live in
 browser code, and these APIs **bill per call** so responses must be cached. Both
 forces are handled in this folder. The browser only ever talks to these
-endpoints (via `src/lib/dataClient/apiClient.ts`) — never to RentCast/TravelTime/
-Google directly.
+endpoints (via `src/lib/dataClient/apiClient.ts`) — never to RentCast/Google
+directly.
 
 Folders/files starting with `_` are **not** routed as functions — `_lib/` is
 shared server code.
@@ -25,7 +25,7 @@ shared server code.
 - **`rateLimit.ts`** — per-IP fixed-window limiter (Upstash or memory). 429 when exceeded.
 - **`budgetGuard.ts`** — daily spend estimate + circuit breaker; trips at `DAILY_BUDGET_USD`.
 - **`handler.ts`** — wraps every endpoint: CORS, method check, rate limit, error → JSON.
-- **`providers/`** — `rentcast` (listings), `google` (geocode + commute via Routes; **active**), `places` (ratings), `traveltime` (alternative geocode + commute, needs a business email; swap imports to use it).
+- **`providers/`** — `rentcast` (listings), `google` (geocode + commute via Routes), `places` (ratings).
 - **`ratings.ts`** — blends external + first-party reviews (first-party empty until Phase 2).
 - **`orchestrate.ts`** — the `/api/search` flow; reuses the SAME `src/lib/scoring.ts` as the client.
 
