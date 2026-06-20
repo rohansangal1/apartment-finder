@@ -1,8 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { useSearch } from '../context/SearchContext';
-import { SORTERS } from '../lib/searchService';
-import ListingCard from '../components/ListingCard';
+import { useSearch } from '../context/search-context';
+import { SORTERS } from '../lib/search-service';
+import ListingCard from '../components/listing-card';
 
 const SORT_OPTIONS = [
   { value: 'match', label: 'Best match' },

@@ -13,8 +13,8 @@
  * /views or /components changes between phases.
  */
 import type { DataClient, SearchCriteria, ScoredListing, AddressSuggestion } from '../types';
-import { mockClient } from './mockClient';
-import { apiClient, search as apiSearch, autocompleteAddress as apiAutocomplete } from './apiClient';
+import { mockClient } from './mock-client';
+import { apiClient, search as apiSearch, autocompleteAddress as apiAutocomplete } from './api-client';
 
 const SOURCE: string = import.meta.env?.VITE_DATA_SOURCE || 'mock';
 

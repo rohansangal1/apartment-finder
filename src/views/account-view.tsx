@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useUserData } from '../context/UserDataContext';
-import { useSearch } from '../context/SearchContext';
+import { useAuth } from '../context/auth-context';
+import { useUserData } from '../context/user-data-context';
+import { useSearch } from '../context/search-context';
 
 /**
  * Account view. With Supabase configured, "Continue with Google" runs the real

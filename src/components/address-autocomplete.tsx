@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { autocompleteAddress } from '../lib/dataClient';
+import { autocompleteAddress } from '../lib/data-client';
 import type { AddressSuggestion } from '../lib/types';
 
 /**
@@ -16,7 +16,8 @@ interface Props {
   className?: string;
 }
 
-const DEBOUNCE_MS = 250;
+const DEBOUNCE_MS = 200;
+const MIN_CHARS = 1; // suggest as soon as the user types anything
 
 export default function AddressAutocomplete({ value, onChange, placeholder, className }: Props) {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
@@ -36,7 +37,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder, clas
       return;
     }
     const q = value.trim();
-    if (q.length < 3) {
+    if (q.length < MIN_CHARS) {
       setSuggestions([]);
       setOpen(false);
       return;
@@ -113,7 +114,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder, clas
       {open && suggestions.length > 0 && (
         <ul
           role="listbox"
-          className="absolute z-10 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-slate-200 bg-ink py-1 shadow-lg"
+          className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-ink-600 bg-ink-800 py-1 shadow-xl"
         >
           {suggestions.map((s, i) => (
             <li key={s.placeId || s.description} role="option" aria-selected={i === activeIndex}>

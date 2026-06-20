@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import type { ScoredListing } from '../lib/types';
-import MatchScore from './MatchScore';
-import Rating from './Rating';
-import Tag from './Tag';
-import SaveButton from './SaveButton';
+import MatchScore from './match-score';
+import Rating from './rating';
+import Tag from './tag';
+import SaveButton from './save-button';
 import { formatRent, formatBeds, formatCommute, resolveListingUrl } from '../lib/format';
 
 /**

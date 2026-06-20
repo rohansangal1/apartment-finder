@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSearch, DEFAULT_CRITERIA } from '../context/SearchContext';
-import { useUserData } from '../context/UserDataContext';
-import AddressAutocomplete from '../components/AddressAutocomplete';
-import ApartmentCarousel from '../components/ApartmentCarousel';
+import { useSearch, DEFAULT_CRITERIA } from '../context/search-context';
+import { useUserData } from '../context/user-data-context';
+import AddressAutocomplete from '../components/address-autocomplete';
+import ApartmentCarousel from '../components/apartment-carousel';
 import type { SearchCriteria, CommuteMode, Weights } from '../lib/types';
 
 /** Hero backdrop. Stock/marketing photo — swap by pointing this at another asset. */
@@ -75,14 +75,18 @@ export default function InputView() {
     <div className="space-y-10">
       <form onSubmit={onSubmit} className="space-y-6">
         {/* ---- Hero ---- */}
-        <section className="relative -mx-4 overflow-hidden sm:mx-0 sm:rounded-3xl">
-          <img
-            src={HERO_IMAGE}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/75 to-ink-950/40" />
+        {/* overflow-hidden lives on the background layer only, so the work-address
+            autocomplete dropdown (in the content layer) isn't clipped. */}
+        <section className="relative -mx-4 sm:mx-0">
+          <div className="absolute inset-0 overflow-hidden sm:rounded-3xl">
+            <img
+              src={HERO_IMAGE}
+              alt=""
+              aria-hidden="true"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/75 to-ink-950/40" />
+          </div>
           <div className="relative px-5 pb-6 pt-24 sm:px-8 sm:pt-32">
             <h1 className="max-w-xl text-3xl font-bold leading-tight tracking-tight text-paper sm:text-4xl">
               Find a place that fits your life

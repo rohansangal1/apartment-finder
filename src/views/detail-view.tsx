@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useSearch } from '../context/SearchContext';
-import { useUserData } from '../context/UserDataContext';
-import { getListings, getCommute, getRating, geocode } from '../lib/dataClient';
+import { useSearch } from '../context/search-context';
+import { useUserData } from '../context/user-data-context';
+import { getListings, getCommute, getRating, geocode } from '../lib/data-client';
 import type { Listing, Rating as RatingType, Review, CommuteMode } from '../lib/types';
-import MatchScore from '../components/MatchScore';
-import Rating from '../components/Rating';
-import Tag from '../components/Tag';
-import SaveButton from '../components/SaveButton';
-import ReviewForm from '../components/ReviewForm';
+import MatchScore from '../components/match-score';
+import Rating from '../components/rating';
+import Tag from '../components/tag';
+import SaveButton from '../components/save-button';
+import ReviewForm from '../components/review-form';
 import { formatRent, formatBeds, resolveListingUrl, sourceLabel } from '../lib/format';
 
 const ALL_MODES: CommuteMode[] = ['walk', 'transit', 'bike', 'drive'];

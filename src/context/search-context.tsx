@@ -8,7 +8,7 @@
  */
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { SearchCriteria, ScoredListing } from '../lib/types';
-import { runSearch } from '../lib/searchService';
+import { runSearch } from '../lib/search-service';
 
 export const DEFAULT_CRITERIA: SearchCriteria = {
   city: 'San Francisco',

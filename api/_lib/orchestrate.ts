@@ -1,5 +1,5 @@
 /**
- * Server-side search orchestration — the paid mirror of src/lib/searchService.ts.
+ * Server-side search orchestration — the paid mirror of src/lib/search-service.ts.
  * Doing this server-side hides keys and avoids many browser round-trips:
  *   listings (RentCast) → geocode origin (Google) → commute per listing
  *   (Google Routes) → blended rating (Places + first-party) → score → rank.
