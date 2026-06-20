@@ -25,14 +25,15 @@ shared server code.
 - **`rateLimit.ts`** — per-IP fixed-window limiter (Upstash or memory). 429 when exceeded.
 - **`budgetGuard.ts`** — daily spend estimate + circuit breaker; trips at `DAILY_BUDGET_USD`.
 - **`handler.ts`** — wraps every endpoint: CORS, method check, rate limit, error → JSON.
-- **`providers/`** — `rentcast` (listings), `traveltime` (geocode + commute), `places` (ratings).
+- **`providers/`** — `rentcast` (listings), `google` (geocode + commute via Routes; **active**), `places` (ratings), `traveltime` (alternative geocode + commute, needs a business email; swap imports to use it).
 - **`ratings.ts`** — blends external + first-party reviews (first-party empty until Phase 2).
 - **`orchestrate.ts`** — the `/api/search` flow; reuses the SAME `src/lib/scoring.ts` as the client.
 
 ## Going live
 
-1. Set `RENTCAST_API_KEY`, `TRAVELTIME_APP_ID`, `TRAVELTIME_API_KEY`,
-   `GOOGLE_MAPS_API_KEY` in Vercel project settings (see `.env.example`).
+1. Set `RENTCAST_API_KEY` and `GOOGLE_MAPS_API_KEY` in Vercel project settings
+   (see `.env.example`). The Google key needs Geocoding API, Routes API, and
+   Places API (New) enabled.
 2. (Recommended) Set `UPSTASH_REDIS_REST_URL` + `_TOKEN` so cache + rate limits
    are durable across invocations.
 3. Set the client's `VITE_DATA_SOURCE=api` and redeploy.

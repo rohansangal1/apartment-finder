@@ -4,7 +4,7 @@
  */
 import { withHandler } from './_lib/handler';
 import { HttpError } from './_lib/env';
-import { geocode } from './_lib/providers/traveltime';
+import { geocode } from './_lib/providers/google';
 
 export default withHandler('GET', async (req) => {
   const address = typeof req.query.address === 'string' ? req.query.address : '';
