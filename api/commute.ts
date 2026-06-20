@@ -7,7 +7,7 @@
 import type { CommuteMode } from '../src/lib/types';
 import { withHandler } from './_lib/handler';
 import { HttpError } from './_lib/env';
-import { commute } from './_lib/providers/traveltime';
+import { commute } from './_lib/providers/google';
 
 const MODES: CommuteMode[] = ['walk', 'transit', 'bike', 'drive'];
 

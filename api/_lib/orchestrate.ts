@@ -10,7 +10,7 @@
 import type { SearchCriteria, ScoredListing, GeoPoint } from '../../src/lib/types';
 import { scoreListing, computeSubScores, explainMatch } from '../../src/lib/scoring';
 import { fetchListings } from './providers/rentcast';
-import { geocode, commute } from './providers/traveltime';
+import { geocode, commute } from './providers/google';
 import { blendRating } from './ratings';
 
 export async function orchestrateSearch(criteria: SearchCriteria): Promise<ScoredListing[]> {

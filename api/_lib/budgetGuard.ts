@@ -14,6 +14,7 @@ import { DAILY_BUDGET_USD, HttpError } from './env';
 export const CALL_COST = {
   rentcast: 0.01,
   traveltime: 0.005,
+  routes: 0.005, // Google Routes API
   places: 0.017,
   geocode: 0.005,
 } as const;
