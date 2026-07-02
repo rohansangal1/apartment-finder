@@ -50,7 +50,7 @@ export async function runSearch(criteria: SearchCriteria): Promise<ScoredListing
 
       const subScores = computeSubScores(enriched, criteria, commuteMinutes);
       const matchScore = scoreListing(enriched, criteria, commuteMinutes);
-      const whyItMatched = explainMatch(subScores, criteria);
+      const whyItMatched = explainMatch(subScores, criteria, enriched);
 
       return {
         listing: enriched,

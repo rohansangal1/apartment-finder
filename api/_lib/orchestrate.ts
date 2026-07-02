@@ -7,11 +7,11 @@
  * Reuses the SAME pure scoring engine the client uses (src/lib/scoring.ts), so
  * scores are identical regardless of where they're computed.
  */
-import type { SearchCriteria, ScoredListing, GeoPoint } from '../../src/lib/types';
-import { scoreListing, computeSubScores, explainMatch } from '../../src/lib/scoring';
-import { fetchListings } from './providers/rentcast';
-import { geocode, commute } from './providers/google';
-import { blendRating } from './ratings';
+import type { SearchCriteria, ScoredListing, GeoPoint } from '../../src/lib/types.js';
+import { scoreListing, computeSubScores, explainMatch } from '../../src/lib/scoring.js';
+import { fetchListings } from './providers/rentcast.js';
+import { geocode, commute } from './providers/google.js';
+import { blendRating } from './ratings.js';
 
 export async function orchestrateSearch(criteria: SearchCriteria): Promise<ScoredListing[]> {
   const listings = await fetchListings(criteria);
@@ -40,7 +40,7 @@ export async function orchestrateSearch(criteria: SearchCriteria): Promise<Score
         matchScore,
         commuteMinutes,
         commuteMode: criteria.commuteMode,
-        whyItMatched: explainMatch(subScores, criteria),
+        whyItMatched: explainMatch(subScores, criteria, enriched),
         subScores,
       };
     })

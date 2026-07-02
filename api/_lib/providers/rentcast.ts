@@ -5,10 +5,10 @@
  *
  * Docs: https://developers.rentcast.io/  (GET /v1/listings/rental/long-term)
  */
-import type { Listing, Source, SearchCriteria } from '../../../src/lib/types';
-import { requireEnv } from '../env';
-import { cached, TTL, hashKey } from '../cache';
-import { assertWithinBudget, recordSpend } from '../budgetGuard';
+import type { Listing, Source, SearchCriteria } from '../../../src/lib/types.js';
+import { requireEnv } from '../env.js';
+import { cached, TTL, hashKey } from '../cache.js';
+import { assertWithinBudget, recordSpend } from '../budgetGuard.js';
 
 const BASE = 'https://api.rentcast.io/v1';
 const SOURCE: Source = 'rentcast';
@@ -29,26 +29,48 @@ interface RentCastListing {
   // RentCast doesn't supply ratings; those come from the ratings provider.
 }
 
-/** Fetch rental listings for the search criteria, cached by city+budget+beds. */
+/**
+ * Split a user-entered location into RentCast's separate city + state params.
+ * Accepts "Austin, TX", "Austin TX", or "Austin" (state left blank). Only a
+ * trailing 2-letter US state code is treated as state; anything else stays city.
+ */
+function parseCityState(raw: string | undefined): { city: string; state: string } {
+  const input = (raw || '').trim();
+  if (!input) return { city: '', state: '' };
+
+  // "City, ST" — comma-separated is the common, unambiguous form.
+  const comma = input.match(/^(.*),\s*([A-Za-z]{2})$/);
+  if (comma) return { city: comma[1].trim(), state: comma[2].toUpperCase() };
+
+  // "City ST" — trailing 2-letter token with no comma.
+  const space = input.match(/^(.*)\s+([A-Za-z]{2})$/);
+  if (space) return { city: space[1].trim(), state: space[2].toUpperCase() };
+
+  return { city: input, state: '' };
+}
+
+/** Fetch rental listings for the search criteria, cached by city+state+budget+beds. */
 export async function fetchListings(criteria: Partial<SearchCriteria>): Promise<Listing[]> {
   const apiKey = requireEnv('RENTCAST_API_KEY');
-  const city = (criteria.city || '').trim();
+  const { city, state } = parseCityState(criteria.city);
   if (!city) return [];
 
   const cacheKey = `listings:${SOURCE}:${hashKey(
-    JSON.stringify({ city, maxRent: criteria.maxRent, beds: criteria.bedrooms })
+    JSON.stringify({ city, state, maxRent: criteria.maxRent, beds: criteria.bedrooms })
   )}`;
 
   return cached(cacheKey, TTL.listings, async () => {
     await assertWithinBudget();
 
+    // RentCast expects city and state as separate params; a combined
+    // "Austin, TX" city string returns zero results.
     const params = new URLSearchParams({
       city,
       status: 'Active',
       limit: '25',
     });
+    if (state) params.set('state', state);
     if (criteria.bedrooms != null) params.set('bedrooms', String(criteria.bedrooms));
-    // RentCast expects a state; we let the city query carry it and post-filter loosely.
 
     const res = await fetch(`${BASE}/listings/rental/long-term?${params}`, {
       headers: { 'X-Api-Key': apiKey, Accept: 'application/json' },

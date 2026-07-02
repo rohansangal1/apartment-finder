@@ -6,7 +6,7 @@
  * unit-tested and reasoned about in isolation. Nothing in here touches the
  * network or the DOM.
  */
-import type { Listing, SearchCriteria, Weights, SubScores } from './types';
+import type { Listing, SearchCriteria, Weights, SubScores } from './types.js';
 
 /** Max acceptable commute, in minutes, before commute fit hits 0. Tune per mode later. */
 export const MAX_COMMUTE = 60;
@@ -91,7 +91,11 @@ export function scoreListing(
  * weighted by what the user actually cares about (so we don't brag about a
  * dimension they put zero weight on).
  */
-export function explainMatch(sub: SubScores, criteria: SearchCriteria): string {
+export function explainMatch(
+  sub: SubScores,
+  criteria: SearchCriteria,
+  listing: Listing
+): string {
   const w = normalizeWeights(criteria.weights);
   const phrases: Record<keyof SubScores, string> = {
     commute: phraseFor(sub.commute, 'a quick commute', 'a manageable commute'),
@@ -100,10 +104,21 @@ export function explainMatch(sub: SubScores, criteria: SearchCriteria): string {
     space: phraseFor(sub.space, 'plenty of space', 'enough room'),
   };
 
-  // Rank dimensions by weighted contribution, drop ones the user ignores or that score poorly.
+  // Don't brag about dimensions we can't actually stand behind: commute is only
+  // real for in-person searches, and a rating claim needs a known rating (an
+  // unknown one sits at a neutral score, which we must not sell as "reviews").
+  const earned: Record<keyof SubScores, boolean> = {
+    commute: criteria.inPerson,
+    price: true,
+    rating: listing.ratingValue != null,
+    space: true,
+  };
+
+  // Rank dimensions by weighted contribution, drop ones the user ignores, that
+  // score poorly, or that we haven't earned.
   const keys = Object.keys(phrases) as Array<keyof SubScores>;
   const ranked = keys
-    .filter((k) => w[k] > 0.01 && sub[k] >= 50)
+    .filter((k) => earned[k] && w[k] > 0.01 && sub[k] >= 50)
     .sort((a, b) => w[b] * sub[b] - w[a] * sub[a])
     .slice(0, 2)
     .map((k) => phrases[k]);

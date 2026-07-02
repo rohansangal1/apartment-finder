@@ -59,16 +59,12 @@ export function resolveListingUrl(
 }
 
 function buildSearchFallback(listing: Listing): string {
-  const query = encodeURIComponent(`${listing.address} ${listing.city}`);
-  switch (listing.source) {
-    case 'zillow':
-      return `https://www.zillow.com/homes/${query}_rb/`;
-    case 'apartments_com':
-    case 'rentcast':
-    case 'mock':
-    default:
-      return `https://www.apartments.com/${encodeURIComponent(
-        listing.city.toLowerCase().replace(/\s+/g, '-')
-      )}/?q=${query}`;
-  }
+  // We often don't know which site actually hosts the listing (aggregators like
+  // RentCast don't tell us), and site-specific search URLs rot easily. A Google
+  // search for the address reliably surfaces the real listing wherever it lives,
+  // so the user never lands on a dead "no one is home" page.
+  const query = encodeURIComponent(
+    `${listing.address} ${listing.city} apartment for rent`
+  );
+  return `https://www.google.com/search?q=${query}`;
 }

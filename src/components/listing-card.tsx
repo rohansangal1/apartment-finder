@@ -91,7 +91,7 @@ export default function ListingCard({
           </div>
           {isFallback && (
             <p className="mt-1.5 text-right text-xs text-amber-600">
-              Original link expired — opens a search on the source site.
+              Direct link unavailable — opens a web search for this address.
             </p>
           )}
         </div>

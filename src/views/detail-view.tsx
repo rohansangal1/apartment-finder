@@ -153,7 +153,7 @@ export default function DetailView() {
         </a>
         {isFallback && (
           <p className="mt-2 text-center text-xs text-amber-600">
-            The original listing link expired — this opens a search on the source site so you never hit a dead end.
+            Our data source doesn't provide a direct link — this opens a web search for the address so you never hit a dead end.
           </p>
         )}
       </div>
