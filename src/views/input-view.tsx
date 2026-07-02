@@ -6,8 +6,8 @@ import AddressAutocomplete from '../components/address-autocomplete';
 import ApartmentCarousel from '../components/apartment-carousel';
 import type { SearchCriteria, CommuteMode, Weights } from '../lib/types';
 
-/** Hero backdrop. Stock/marketing photo — swap by pointing this at another asset. */
-const HERO_IMAGE = '/images/hero-skyline.jpg';
+/** Hero backdrop. A warm, sunlit interior — swap by pointing this at another asset. */
+const HERO_IMAGE = '/images/apt-loft.jpg';
 
 /** Cities we have inventory for. On the live API source RentCast covers any US
  * city, so this list is just a convenient set of starting points. */
@@ -26,9 +26,9 @@ const PRIORITIES: Array<{ key: keyof Weights; label: string; hint: string }> = [
 ];
 
 /**
- * Onboarding: collect the user's situation. Priorities are expressed as 0–1
- * weight sliders (the scorer normalizes them), which is more expressive than a
- * strict ranking and maps 1:1 to the SearchCriteria.weights shape.
+ * Onboarding: collect the user's situation in a calm, guided flow. Priorities
+ * are expressed as 0–1 weight sliders (the scorer normalizes them), which is
+ * more expressive than a strict ranking and maps 1:1 to SearchCriteria.weights.
  */
 export default function InputView() {
   const navigate = useNavigate();
@@ -72,93 +72,87 @@ export default function InputView() {
   };
 
   return (
-    <div className="space-y-10">
-      <form onSubmit={onSubmit} className="space-y-6">
-        {/* ---- Hero ---- */}
-        {/* overflow-hidden lives on the background layer only, so the work-address
-            autocomplete dropdown (in the content layer) isn't clipped. */}
-        <section className="relative -mx-4 sm:mx-0">
-          <div className="absolute inset-0 overflow-hidden sm:rounded-3xl">
-            <img
-              src={HERO_IMAGE}
-              alt=""
-              aria-hidden="true"
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/75 to-ink-950/40" />
-          </div>
-          <div className="relative px-5 pb-6 pt-24 sm:px-8 sm:pt-32">
-            <h1 className="max-w-xl text-3xl font-bold leading-tight tracking-tight text-paper sm:text-4xl">
+    <div className="space-y-12 sm:space-y-16">
+      {/* ---- Hero ---- */}
+      <section className="animate-fadeup overflow-hidden rounded-3xl bg-paper-cream shadow-soft-lg">
+        <div className="grid items-stretch sm:grid-cols-2">
+          <div className="order-2 flex flex-col justify-center px-7 py-9 sm:order-1 sm:px-10 sm:py-14">
+            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-700">
+              Apartment finding, made human
+            </span>
+            <h1 className="mt-4 font-serif text-5xl leading-[1.02] tracking-tight text-slate-900 sm:text-6xl">
               Find a place that fits your life
             </h1>
-            <p className="mt-2 max-w-lg text-sm text-paper-muted sm:text-base">
-              Tell us your situation and we'll rank apartments by how well they fit — commute,
-              budget, ratings, space. No endless scrolling.
+            <p className="mt-4 max-w-md text-base leading-relaxed text-slate-600">
+              Tell us a little about your days — your commute, your budget, the space you need — and
+              we'll gently rank homes by how well they fit. No endless scrolling.
             </p>
-
-            {/* Quick-start inputs layered on the hero */}
-            <div className="mt-6 space-y-4 rounded-2xl border border-white/10 bg-ink-900/70 p-4 backdrop-blur sm:p-5">
-              <Field label="City">
-                <select
-                  value={form.city}
-                  onChange={(e) => set({ city: e.target.value })}
-                  className="input"
-                >
-                  {CITIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field label="Where do you work?">
-                <div className="grid grid-cols-2 gap-2">
-                  <Segment
-                    active={form.inPerson}
-                    onClick={() => set({ inPerson: true })}
-                    label="In person"
-                  />
-                  <Segment
-                    active={!form.inPerson}
-                    onClick={() => set({ inPerson: false })}
-                    label="Remote"
-                  />
-                </div>
-              </Field>
-
-              {form.inPerson && (
-                <Field label="Work address" hint="We estimate commute from here.">
-                  <AddressAutocomplete
-                    value={form.workAddress ?? ''}
-                    onChange={(workAddress) => set({ workAddress })}
-                    placeholder="e.g. Salesforce Tower, San Francisco"
-                    className="input"
-                  />
-                </Field>
-              )}
-
-              <Field label={`Max rent — $${form.maxRent.toLocaleString()}/mo`}>
-                <input
-                  type="range"
-                  min="800"
-                  max="8000"
-                  step="50"
-                  value={form.maxRent}
-                  onChange={(e) => set({ maxRent: Number(e.target.value) })}
-                  className="w-full accent-brand-600"
-                />
-              </Field>
-            </div>
           </div>
-        </section>
+          <div className="order-1 min-h-[220px] sm:order-2 sm:min-h-[380px]">
+            <img
+              src={HERO_IMAGE}
+              alt="A warm, sunlit apartment interior"
+              className="h-full w-full object-cover"
+            />
+          </div>
+        </div>
+      </section>
 
-        {/* ---- Refine ---- */}
-        <div className="card space-y-6 p-5">
+      <form onSubmit={onSubmit} className="space-y-6 sm:space-y-8">
+        {/* ---- 1 · Where ---- */}
+        <GroupCard step={1} title="Where are you looking?" delay={60}>
+          <Field label="City">
+            <div className="relative">
+              <select
+                value={form.city}
+                onChange={(e) => set({ city: e.target.value })}
+                className="input appearance-none pr-10"
+              >
+                {CITIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <Chevron className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            </div>
+          </Field>
+
+          <Field label="Where do you work?">
+            <div className="grid grid-cols-2 gap-2.5">
+              <Pill active={form.inPerson} onClick={() => set({ inPerson: true })} label="In person" />
+              <Pill active={!form.inPerson} onClick={() => set({ inPerson: false })} label="Remote" />
+            </div>
+          </Field>
+
+          {form.inPerson && (
+            <Field label="Work address" hint="We estimate your commute from here.">
+              <AddressAutocomplete
+                value={form.workAddress ?? ''}
+                onChange={(workAddress) => set({ workAddress })}
+                placeholder="e.g. Salesforce Tower, San Francisco"
+                className="input"
+              />
+            </Field>
+          )}
+        </GroupCard>
+
+        {/* ---- 2 · Budget & space ---- */}
+        <GroupCard step={2} title="Your budget & space" delay={120}>
+          <Field
+            label={
+              <span>
+                Max rent <span className="data text-brand-700">${form.maxRent.toLocaleString()}</span> / month
+              </span>
+            }
+          >
+            <Slider min={800} max={8000} step={50} value={form.maxRent} onChange={(v) => set({ maxRent: v })} />
+          </Field>
+
           <Field label="Bedrooms">
-            <div className="flex gap-2">
+            <div className="grid grid-cols-4 gap-2.5">
               {[0, 1, 2, 3].map((b) => (
-                <Segment
+                <Pill
                   key={b}
                   active={form.bedrooms === b}
                   onClick={() => set({ bedrooms: b })}
@@ -169,15 +163,15 @@ export default function InputView() {
           </Field>
 
           {form.inPerson && (
-            <Field label="Preferred commute mode">
-              <div className="grid grid-cols-4 gap-2">
+            <Field label="How do you like to get around?">
+              <div className="grid grid-cols-4 gap-2.5">
                 {COMMUTE_MODES.map((m) => (
-                  <Segment
+                  <Pill
                     key={m.value}
                     active={form.commuteMode === m.value}
                     onClick={() => set({ commuteMode: m.value })}
                     label={
-                      <span className="flex flex-col items-center gap-0.5">
+                      <span className="flex flex-col items-center gap-1">
                         <span className="text-lg">{m.icon}</span>
                         <span className="text-xs">{m.label}</span>
                       </span>
@@ -187,51 +181,49 @@ export default function InputView() {
               </div>
             </Field>
           )}
+        </GroupCard>
 
-          <div>
-            <p className="text-sm font-semibold text-slate-700">What matters most?</p>
-            <p className="mb-3 text-xs text-slate-400">
-              Slide up the things you care about. We normalize these into your match score.
-            </p>
-            <div className="space-y-4">
-              {PRIORITIES.map((p) => {
-                // Remote workers don't have a commute to weigh.
-                if (p.key === 'commute' && !form.inPerson) return null;
-                return (
-                  <div key={p.key}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-700">{p.label}</span>
-                      <span className="text-xs text-slate-400">{p.hint}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={form.weights[p.key]}
-                      onChange={(e) => setWeight(p.key, Number(e.target.value))}
-                      className="mt-1 w-full accent-brand-600"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full rounded-xl bg-brand-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-brand-700"
+        {/* ---- 3 · Priorities ---- */}
+        <GroupCard
+          step={3}
+          title="What matters most to you?"
+          subtitle="Slide up the things you care about — we'll weigh them into every match."
+          delay={180}
         >
-          Show me matches
-        </button>
+          <div className="space-y-6">
+            {PRIORITIES.map((p) => {
+              // Remote workers don't have a commute to weigh.
+              if (p.key === 'commute' && !form.inPerson) return null;
+              return (
+                <div key={p.key}>
+                  <div className="mb-2 flex items-baseline justify-between">
+                    <span className="text-sm font-medium text-slate-800">{p.label}</span>
+                    <span className="text-xs text-slate-400">{p.hint}</span>
+                  </div>
+                  <Slider min={0} max={1} step={0.1} value={form.weights[p.key]} onChange={(v) => setWeight(p.key, v)} />
+                </div>
+              );
+            })}
+          </div>
+        </GroupCard>
+
+        {/* ---- CTA ---- */}
+        <div className="animate-fadeup pt-1" style={{ animationDelay: '240ms' }}>
+          <button
+            type="submit"
+            className="w-full rounded-2xl bg-brand-600 px-4 py-4 text-base font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-soft-lg active:translate-y-0"
+          >
+            Show me matches
+          </button>
+          <p className="mt-3 text-center text-xs text-slate-400">Takes about 30 seconds ✦ No account needed</p>
+        </div>
       </form>
 
       {/* ---- Featured spaces ---- */}
-      <section>
-        <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-lg font-bold tracking-tight text-slate-900">Featured spaces</h2>
-          <span className="text-xs text-slate-400">A look at the kinds of places people love</span>
+      <section className="animate-fadeup" style={{ animationDelay: '300ms' }}>
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="font-serif text-2xl font-semibold tracking-tight text-slate-900">Featured spaces</h2>
+          <span className="hidden text-xs text-slate-400 sm:block">A look at places people love</span>
         </div>
         <ApartmentCarousel />
       </section>
@@ -239,36 +231,97 @@ export default function InputView() {
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+/** A soft labeled group in the guided form — numbered step, title, breathing room. */
+function GroupCard({
+  step,
+  title,
+  subtitle,
+  delay = 0,
+  children,
+}: {
+  step: number;
+  title: string;
+  subtitle?: string;
+  delay?: number;
+  children: ReactNode;
+}) {
+  return (
+    <section className="card animate-fadeup p-6 sm:p-8" style={{ animationDelay: `${delay}ms` }}>
+      <div className="mb-6 flex items-center gap-3">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sage font-serif text-sm font-semibold text-brand-700">
+          {step}
+        </span>
+        <div>
+          <h2 className="font-serif text-xl font-semibold leading-tight tracking-tight text-slate-900">{title}</h2>
+          {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
+        </div>
+      </div>
+      <div className="space-y-5">{children}</div>
+    </section>
+  );
+}
+
+function Field({ label, hint, children }: { label: ReactNode; hint?: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="text-sm font-semibold text-slate-700">{label}</span>
+      <span className="text-sm font-medium text-slate-800">{label}</span>
       {hint && <span className="mt-0.5 block text-xs text-slate-400">{hint}</span>}
-      <div className="mt-1.5">{children}</div>
+      <div className="mt-2">{children}</div>
     </label>
   );
 }
 
-function Segment({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: ReactNode;
-}) {
+/** Filled-pill toggle — pale sage fill when selected, calm neutral otherwise. */
+function Pill({ active, onClick, label }: { active: boolean; onClick: () => void; label: ReactNode }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+      aria-pressed={active}
+      className={`rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
         active
-          ? 'border-brand-600 bg-brand-50 text-brand-700'
-          : 'border-slate-200 bg-ink text-slate-600 hover:border-slate-300'
+          ? 'bg-sage text-brand-700 shadow-[inset_0_0_0_1.5px_rgba(63,107,84,0.35)]'
+          : 'bg-ink-700 text-slate-600 shadow-soft hover:-translate-y-px hover:text-slate-800'
       }`}
     >
       {label}
     </button>
+  );
+}
+
+/** Green-filled range slider with a soft-shadow thumb (see .slider in index.css). */
+function Slider({
+  min,
+  max,
+  step,
+  value,
+  onChange,
+}: {
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const pct = ((value - min) / (max - min)) * 100;
+  return (
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className="slider"
+      style={{ ['--pct' as string]: `${pct}%` }}
+    />
+  );
+}
+
+function Chevron({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m6 9 6 6 6-6" />
+    </svg>
   );
 }

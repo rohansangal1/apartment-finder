@@ -7,8 +7,8 @@
  * Spend is estimated, not exact — we attribute a rough per-call cost to each
  * provider. The point is a safety ceiling, not accounting.
  */
-import { getCache } from './cache';
-import { DAILY_BUDGET_USD, HttpError } from './env';
+import { getCache } from './cache.js';
+import { DAILY_BUDGET_USD, HttpError } from './env.js';
 
 /** Rough per-call cost estimates (USD). Tune to each provider's pricing. */
 export const CALL_COST = {

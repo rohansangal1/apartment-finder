@@ -4,10 +4,12 @@ import type { AddressSuggestion } from '../lib/types';
 
 /**
  * Work-address input with Google Places type-ahead. As the user types we debounce
- * a call to /api/places-autocomplete and show a clickable dropdown of matches.
+ * a call to /api/places-autocomplete and show a clickable list of matches.
  *
- * Degrades gracefully: on the mock data source `autocompleteAddress` is null, so
- * this behaves as a plain text input (no suggestions, no network calls).
+ * The suggestion list renders inline (in normal flow) directly under the input,
+ * so it pushes the rest of the form down rather than floating over the next
+ * section — no overlap, ever. Degrades gracefully: on the mock data source
+ * `autocompleteAddress` is null, so this behaves as a plain text input.
  */
 interface Props {
   value: string;
@@ -25,7 +27,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder, clas
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   // True right after the user picks a suggestion, so the value change it triggers
-  // doesn't immediately re-open the dropdown with a fresh query.
+  // doesn't immediately re-open the list with a fresh query.
   const justSelected = useRef(false);
 
   // Debounced fetch whenever the typed value changes.
@@ -61,7 +63,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder, clas
     };
   }, [value]);
 
-  // Close the dropdown on an outside click.
+  // Close the list on an outside click.
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -97,7 +99,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder, clas
   };
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef}>
       <input
         type="text"
         value={value}
@@ -114,7 +116,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder, clas
       {open && suggestions.length > 0 && (
         <ul
           role="listbox"
-          className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-ink-600 bg-ink-800 py-1 shadow-xl"
+          className="mt-2 max-h-64 overflow-auto rounded-xl border border-ink-600 bg-ink-700 py-1"
         >
           {suggestions.map((s, i) => (
             <li key={s.placeId || s.description} role="option" aria-selected={i === activeIndex}>
@@ -123,8 +125,8 @@ export default function AddressAutocomplete({ value, onChange, placeholder, clas
                 onMouseDown={(e) => e.preventDefault()} // keep input focus through the click
                 onClick={() => select(s)}
                 onMouseEnter={() => setActiveIndex(i)}
-                className={`block w-full px-3 py-2 text-left text-sm ${
-                  i === activeIndex ? 'bg-brand-50 text-brand-700' : 'text-slate-700'
+                className={`block w-full px-3 py-2 text-left text-sm transition-colors ${
+                  i === activeIndex ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-ink-600/40'
                 }`}
               >
                 {s.description}

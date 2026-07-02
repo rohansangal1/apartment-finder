@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-full flex-col">
       <TopBar />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-24 pt-4 sm:pb-10">{children}</main>
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 pb-24 pt-4 sm:px-6 sm:pb-14 sm:pt-8">{children}</main>
       <Footer />
       <MobileTabBar />
     </div>
@@ -34,13 +34,13 @@ const NAV: NavItem[] = [
 
 function TopBar() {
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-ink/90 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">
+    <header className="sticky top-0 z-20 border-b border-ink-600/70 bg-ink-950/80 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
+        <Link to="/" className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-600 text-white shadow-soft">
             <HomeGlyph />
           </span>
-          <span className="text-lg font-bold tracking-tight text-slate-900">Nestle</span>
+          <span className="font-serif text-xl font-semibold tracking-tight text-brand-700">Nester</span>
         </Link>
         <nav className="hidden items-center gap-1 sm:flex">
           {NAV.map((item) => (
@@ -66,7 +66,7 @@ function TopBar() {
 function MobileTabBar() {
   const { pathname } = useLocation();
   return (
-    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-ink sm:hidden">
+    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-ink-600/70 bg-ink-950/90 backdrop-blur sm:hidden">
       <div className="mx-auto flex max-w-3xl items-stretch justify-around">
         {NAV.map((item) => {
           const active = item.end ? pathname === item.to : pathname.startsWith(item.to);
@@ -91,9 +91,9 @@ function MobileTabBar() {
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-200 px-4 py-6 text-center text-xs text-slate-400">
-      Nestle helps you discover apartments — we link out to each source, we don't host
-      listings or handle transactions.
+    <footer className="border-t border-ink-600/70 px-4 py-8 text-center text-xs text-slate-400">
+      Nester helps you find a place that fits your life — we link out to each source, we don't
+      host listings or handle transactions.
       {DATA_SOURCE === 'mock' && (
         <span className="mt-1 block font-medium text-amber-500">
           Running on demo data (Phase 0). Real sources drop in behind the same interface.

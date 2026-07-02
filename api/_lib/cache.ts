@@ -12,7 +12,7 @@
  *     shared across cold starts, so it won't actually cut prod spend on its own.
  */
 import { Redis } from '@upstash/redis';
-import { optionalEnv } from './env';
+import { optionalEnv } from './env.js';
 
 export interface Cache {
   get<T>(key: string): Promise<T | null>;

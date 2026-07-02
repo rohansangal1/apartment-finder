@@ -41,7 +41,7 @@ export default function ApartmentCarousel() {
 
   return (
     <div
-      className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-ink-600 bg-ink-800 sm:aspect-[16/7]"
+      className="relative aspect-[16/10] w-full overflow-hidden rounded-3xl bg-ink-800 shadow-soft-lg sm:aspect-[16/7]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -72,7 +72,7 @@ export default function ApartmentCarousel() {
         type="button"
         onClick={prev}
         aria-label="Previous slide"
-        className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/10 bg-ink-950/50 p-2 text-paper backdrop-blur transition hover:bg-ink-950/80 focus:outline-none focus:ring-2 focus:ring-teal-400"
+        className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-paper-cream/90 p-2.5 text-slate-700 shadow-soft backdrop-blur transition hover:bg-paper-cream hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
       >
         <ChevronLeft className="h-5 w-5" aria-hidden="true" />
       </button>
@@ -80,7 +80,7 @@ export default function ApartmentCarousel() {
         type="button"
         onClick={next}
         aria-label="Next slide"
-        className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/10 bg-ink-950/50 p-2 text-paper backdrop-blur transition hover:bg-ink-950/80 focus:outline-none focus:ring-2 focus:ring-teal-400"
+        className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-paper-cream/90 p-2.5 text-slate-700 shadow-soft backdrop-blur transition hover:bg-paper-cream hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
       >
         <ChevronRight className="h-5 w-5" aria-hidden="true" />
       </button>
@@ -94,8 +94,8 @@ export default function ApartmentCarousel() {
             onClick={() => go(i)}
             aria-label={`Go to slide ${i + 1}`}
             aria-current={i === index}
-            className={`h-1.5 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-teal-400 ${
-              i === index ? 'w-6 bg-teal-400' : 'w-1.5 bg-paper/40 hover:bg-paper/70'
+            className={`h-1.5 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+              i === index ? 'w-6 bg-brand-700' : 'w-1.5 bg-white/60 hover:bg-white/90'
             }`}
           />
         ))}

@@ -5,10 +5,10 @@
  * Keeps all secret keys server-side and collapses many browser round-trips into
  * one call. Rate-limited + budget-guarded via the shared wrapper + providers.
  */
-import type { SearchCriteria } from '../src/lib/types';
-import { withHandler } from './_lib/handler';
-import { HttpError } from './_lib/env';
-import { orchestrateSearch } from './_lib/orchestrate';
+import type { SearchCriteria } from '../src/lib/types.js';
+import { withHandler } from './_lib/handler.js';
+import { HttpError } from './_lib/env.js';
+import { orchestrateSearch } from './_lib/orchestrate.js';
 
 function parseCriteria(body: unknown): SearchCriteria {
   const c = body as Partial<SearchCriteria> | undefined;

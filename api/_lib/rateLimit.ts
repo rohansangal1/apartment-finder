@@ -6,7 +6,7 @@
  * configured, else an in-process Map (best-effort for dev).
  */
 import { Redis } from '@upstash/redis';
-import { optionalEnv, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SEC, HttpError } from './env';
+import { optionalEnv, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SEC, HttpError } from './env.js';
 
 interface Limiter {
   hit(ip: string): Promise<{ allowed: boolean; remaining: number }>;

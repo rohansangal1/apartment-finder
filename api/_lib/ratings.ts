@@ -7,8 +7,8 @@
  *
  * Mirrors the mock client's blendRating so behavior is consistent across sources.
  */
-import type { Listing, Rating, Review } from '../../src/lib/types';
-import { fetchPlacesRating } from './providers/places';
+import type { Listing, Rating, Review } from '../../src/lib/types.js';
+import { fetchPlacesRating } from './providers/places.js';
 
 export async function blendRating(
   listing: Listing,

@@ -9,10 +9,10 @@
  * Docs: https://developers.google.com/maps/documentation/places/web-service
  *   - Text Search (New): POST https://places.googleapis.com/v1/places:searchText
  */
-import type { Listing, Rating } from '../../../src/lib/types';
-import { requireEnv } from '../env';
-import { cached, TTL, hashKey } from '../cache';
-import { assertWithinBudget, recordSpend } from '../budgetGuard';
+import type { Listing, Rating } from '../../../src/lib/types.js';
+import { requireEnv } from '../env.js';
+import { cached, TTL, hashKey } from '../cache.js';
+import { assertWithinBudget, recordSpend } from '../budgetGuard.js';
 
 const ENDPOINT = 'https://places.googleapis.com/v1/places:searchText';
 

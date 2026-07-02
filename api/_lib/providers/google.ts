@@ -10,10 +10,10 @@
  * Results are cached the same way: geocodes ~forever, commute times for weeks
  * keyed by (originHash, destHash, mode).
  */
-import type { GeoPoint, Commute, CommuteMode, AddressSuggestion } from '../../../src/lib/types';
-import { requireEnv } from '../env';
-import { cached, TTL, hashKey } from '../cache';
-import { assertWithinBudget, recordSpend } from '../budgetGuard';
+import type { GeoPoint, Commute, CommuteMode, AddressSuggestion } from '../../../src/lib/types.js';
+import { requireEnv } from '../env.js';
+import { cached, TTL, hashKey } from '../cache.js';
+import { assertWithinBudget, recordSpend } from '../budgetGuard.js';
 
 const GEOCODE_URL = 'https://maps.googleapis.com/maps/api/geocode/json';
 const ROUTES_URL = 'https://routes.googleapis.com/directions/v2:computeRoutes';

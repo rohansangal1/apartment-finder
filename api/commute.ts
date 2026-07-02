@@ -4,10 +4,10 @@
  * Progressive-hydration endpoint: lets the client fill commute after listings
  * render. Key-protected + cached (long TTL keyed by origin/dest/mode).
  */
-import type { CommuteMode } from '../src/lib/types';
-import { withHandler } from './_lib/handler';
-import { HttpError } from './_lib/env';
-import { commute } from './_lib/providers/google';
+import type { CommuteMode } from '../src/lib/types.js';
+import { withHandler } from './_lib/handler.js';
+import { HttpError } from './_lib/env.js';
+import { commute } from './_lib/providers/google.js';
 
 const MODES: CommuteMode[] = ['walk', 'transit', 'bike', 'drive'];
 

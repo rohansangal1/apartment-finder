@@ -4,8 +4,8 @@
  * `(req) => data` shape instead of juggling res plumbing.
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { HttpError } from './env';
-import { enforceRateLimit } from './rateLimit';
+import { HttpError } from './env.js';
+import { enforceRateLimit } from './rateLimit.js';
 
 /** Any JSON-serializable payload an endpoint returns. */
 type Handler = (req: VercelRequest) => Promise<unknown>;

@@ -6,10 +6,10 @@
  * In Phase 1 the blend is external-only (Google Places); Phase 2 passes the
  * building's first-party reviews into blendRating so platform voices weigh in.
  */
-import type { Listing } from '../src/lib/types';
-import { withHandler } from './_lib/handler';
-import { HttpError } from './_lib/env';
-import { blendRating } from './_lib/ratings';
+import type { Listing } from '../src/lib/types.js';
+import { withHandler } from './_lib/handler.js';
+import { HttpError } from './_lib/env.js';
+import { blendRating } from './_lib/ratings.js';
 
 export default withHandler('GET', async (req) => {
   const address = typeof req.query.address === 'string' ? req.query.address : '';
