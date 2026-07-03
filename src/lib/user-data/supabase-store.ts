@@ -93,10 +93,15 @@ export function createSupabaseStore(supabase: SupabaseClient, user: User): UserS
     },
 
     async savePreferences(prefs) {
+      // Mirror the name from auth metadata into public.users so the profile row
+      // is self-describing (set at sign-up for email accounts, by Google for OAuth).
+      const meta = user.user_metadata ?? {};
       const { error } = await supabase.from('users').upsert(
         {
           id: user.id,
           email: user.email,
+          first_name: (meta.first_name as string | undefined) ?? null,
+          last_name: (meta.last_name as string | undefined) ?? null,
           home_city: prefs.homeCity ?? null,
           default_work_address: prefs.workAddress ?? null,
           default_prefs: { commuteMode: prefs.commuteMode, weights: prefs.weights },

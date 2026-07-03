@@ -48,6 +48,20 @@ export function ratingSourceLabel(source: string): string {
  * In Phase 2 a cron job marks `last_seen_at`-stale links; here we accept an
  * explicit `isStale` flag and otherwise trust the deep link.
  */
+/** Days after `lastSeenAt` beyond which a listing is treated as possibly gone. */
+export const STALE_AFTER_DAYS = 21;
+
+/**
+ * True when a listing was last seen live long enough ago that its link may have
+ * rotted. Listings with no `lastSeenAt` are treated as fresh (we can't tell).
+ */
+export function isListingStale(listing: Listing, now: number = Date.now()): boolean {
+  if (!listing.lastSeenAt) return false;
+  const seen = Date.parse(listing.lastSeenAt);
+  if (Number.isNaN(seen)) return false;
+  return now - seen > STALE_AFTER_DAYS * 24 * 60 * 60 * 1000;
+}
+
 export function resolveListingUrl(
   listing: Listing,
   isStale = false
@@ -60,11 +74,25 @@ export function resolveListingUrl(
 
 function buildSearchFallback(listing: Listing): string {
   // We often don't know which site actually hosts the listing (aggregators like
-  // RentCast don't tell us), and site-specific search URLs rot easily. A Google
-  // search for the address reliably surfaces the real listing wherever it lives,
-  // so the user never lands on a dead "no one is home" page.
-  const query = encodeURIComponent(
-    `${listing.address} ${listing.city} apartment for rent`
-  );
-  return `https://www.google.com/search?q=${query}`;
+  // RentCast don't always give a canonical URL). Rather than a generic web
+  // search, deep-link into Zillow's rental search for the *specific address* —
+  // the dominant rental portal, so this surfaces the real listing (or the closest
+  // live one) far more often than a Google query, and never a dead detail page.
+  const slug = addressSlug(`${listing.address} ${listing.city}`);
+  if (slug) return `https://www.zillow.com/homes/for_rent/${slug}_rb/`;
+
+  // No usable address text — fall back to a precise map pin for the coordinates.
+  return `https://www.google.com/maps/search/?api=1&query=${listing.lat},${listing.lng}`;
+}
+
+/**
+ * Turn a free-form address into Zillow's URL slug form: alphanumerics kept,
+ * runs of anything else collapsed to single hyphens (e.g. "123 Main St, Austin
+ * TX" -> "123-Main-St-Austin-TX"). Returns '' when nothing usable remains.
+ */
+function addressSlug(raw: string): string {
+  return raw
+    .trim()
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }

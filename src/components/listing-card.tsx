@@ -5,7 +5,13 @@ import ScoreBreakdown from './score-breakdown';
 import Rating from './rating';
 import Tag from './tag';
 import SaveButton from './save-button';
-import { formatRent, formatBeds, formatCommute, resolveListingUrl } from '../lib/format';
+import {
+  formatRent,
+  formatBeds,
+  formatCommute,
+  resolveListingUrl,
+  isListingStale,
+} from '../lib/format';
 
 /**
  * Results-view card for one scored listing. Shows neighborhood/address, rent,
@@ -20,7 +26,8 @@ export default function ListingCard({
   inPerson: boolean;
 }) {
   const { listing, matchScore, commuteMinutes, commuteMode, whyItMatched, subScores } = scored;
-  const { url, isFallback } = resolveListingUrl(listing);
+  const stale = isListingStale(listing);
+  const { url, isFallback } = resolveListingUrl(listing, stale);
 
   return (
     <div className="relative rounded-2xl border border-slate-200 bg-ink p-4 shadow-sm transition hover:shadow-md">
@@ -96,7 +103,9 @@ export default function ListingCard({
           </div>
           {isFallback && (
             <p className="mt-1.5 text-right text-xs text-amber-600">
-              Direct link unavailable — opens a web search for this address.
+              {stale
+                ? 'This listing may be gone — opens a rental search for this address.'
+                : 'No direct link — opens a rental search for this address.'}
             </p>
           )}
         </div>
