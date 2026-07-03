@@ -4,7 +4,7 @@ import { useUserData } from '../context/user-data-context';
 import { useAuth } from '../context/auth-context';
 import Rating from '../components/rating';
 import SaveButton from '../components/save-button';
-import { formatRent, formatBeds, resolveListingUrl } from '../lib/format';
+import { formatRent, formatBeds, resolveListingUrl, STALE_AFTER_DAYS } from '../lib/format';
 
 /**
  * Saved apartments. Renders directly from the snapshots stored at save time
@@ -54,7 +54,12 @@ export default function SavedView() {
         <ul className="space-y-3">
           {savedListings.map((s) => {
             const l = s.listing;
-            const { url } = resolveListingUrl(l);
+            // A saved snapshot doesn't re-validate; if it's been sitting in the
+            // shortlist a while, treat it as possibly gone and route the link to a
+            // search rather than a maybe-dead detail page.
+            const stale =
+              Date.now() - Date.parse(s.savedAt) > STALE_AFTER_DAYS * 24 * 60 * 60 * 1000;
+            const { url } = resolveListingUrl(l, stale);
             return (
               <li
                 key={l.id}
@@ -69,6 +74,11 @@ export default function SavedView() {
                       {l.neighborhood}
                     </Link>
                     <p className="truncate text-sm text-slate-500">{l.address}</p>
+                    {stale && (
+                      <p className="mt-0.5 text-xs font-medium text-amber-600">
+                        Saved a while ago — may no longer be available
+                      </p>
+                    )}
                     <div className="mt-1 flex items-center gap-2 text-sm text-slate-600">
                       <span className="font-semibold text-slate-900">{formatRent(l.rentMonthly)}</span>
                       <span className="text-slate-400">·</span>

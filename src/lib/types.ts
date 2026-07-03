@@ -19,6 +19,12 @@ export interface Listing {
   tags: string[]; // e.g. ['pet-friendly', 'in-unit laundry']
   ratingValue: number | null;
   ratingSource: string; // e.g. 'google', 'platform-users', 'aggregated'
+  /**
+   * ISO timestamp the listing was last seen live at its source. Drives the
+   * link-rot / staleness path (resolveListingUrl's isStale). Optional: not every
+   * provider supplies it, and older saved snapshots predate the field.
+   */
+  lastSeenAt?: string;
 }
 
 export type CommuteMode = 'walk' | 'transit' | 'bike' | 'drive';

@@ -7,14 +7,22 @@
  * Reuses the SAME pure scoring engine the client uses (src/lib/scoring.ts), so
  * scores are identical regardless of where they're computed.
  */
-import type { SearchCriteria, ScoredListing, GeoPoint } from '../../src/lib/types.js';
+import type { SearchCriteria, ScoredListing, GeoPoint, Listing } from '../../src/lib/types.js';
 import { scoreListing, computeSubScores, explainMatch } from '../../src/lib/scoring.js';
 import { fetchListings } from './providers/rentcast.js';
+import { fetchScrapedListings } from './providers/scraper.js';
 import { geocode, commute } from './providers/google.js';
 import { blendRating } from './ratings.js';
 
 export async function orchestrateSearch(criteria: SearchCriteria): Promise<ScoredListing[]> {
-  const listings = await fetchListings(criteria);
+  // RentCast for cheap coverage + (optionally) a managed scraper for real
+  // canonical URLs. The scraper is opt-in and self-degrades to [], so this is
+  // free/RentCast-only unless SCRAPER_PROVIDER is configured.
+  const [rentcast, scraped] = await Promise.all([
+    fetchListings(criteria),
+    fetchScrapedListings(criteria),
+  ]);
+  const listings = mergeListings(rentcast, scraped);
 
   let origin: GeoPoint | null = null;
   if (criteria.inPerson && criteria.workAddress) {
@@ -47,4 +55,22 @@ export async function orchestrateSearch(criteria: SearchCriteria): Promise<Score
   );
 
   return scored.sort((a, b) => b.matchScore - a.matchScore);
+}
+
+/**
+ * Merge two provider result sets, deduping by normalized address. When the same
+ * place appears in both, keep the one with a real listingUrl (the scraped entry)
+ * so users get a canonical link instead of RentCast's empty-URL fallback.
+ */
+function mergeListings(primary: Listing[], enrichment: Listing[]): Listing[] {
+  const byAddress = new Map<string, Listing>();
+  const key = (l: Listing) => `${l.address} ${l.city}`.toLowerCase().replace(/\s+/g, ' ').trim();
+
+  for (const l of [...primary, ...enrichment]) {
+    const k = key(l);
+    const existing = byAddress.get(k);
+    // First writer wins, but a later entry with a real URL upgrades one without.
+    if (!existing || (!existing.listingUrl && l.listingUrl)) byAddress.set(k, l);
+  }
+  return [...byAddress.values()];
 }

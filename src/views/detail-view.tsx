@@ -11,7 +11,7 @@ import Rating from '../components/rating';
 import Tag from '../components/tag';
 import SaveButton from '../components/save-button';
 import ReviewForm from '../components/review-form';
-import { formatRent, formatBeds, resolveListingUrl, sourceLabel } from '../lib/format';
+import { formatRent, formatBeds, resolveListingUrl, sourceLabel, isListingStale } from '../lib/format';
 
 const ALL_MODES: CommuteMode[] = ['walk', 'transit', 'bike', 'drive'];
 
@@ -96,7 +96,8 @@ export default function DetailView() {
     );
   }
 
-  const { url, isFallback } = resolveListingUrl(listing);
+  const stale = isListingStale(listing);
+  const { url, isFallback } = resolveListingUrl(listing, stale);
 
   // Match score + sub-score breakdown: use the scored entry from Results when
   // available; otherwise (deep link / refresh) recompute from the listing +
@@ -164,7 +165,9 @@ export default function DetailView() {
         </a>
         {isFallback && (
           <p className="mt-2 text-center text-xs text-amber-600">
-            Our data source doesn't provide a direct link — this opens a web search for the address so you never hit a dead end.
+            {stale
+              ? 'This listing was last seen a while ago and may be gone — this opens a rental search for the address so you never hit a dead end.'
+              : "Our data source doesn't provide a direct link — this opens a rental search for the address so you never hit a dead end."}
           </p>
         )}
       </div>

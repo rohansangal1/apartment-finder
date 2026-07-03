@@ -17,6 +17,7 @@ export const CALL_COST = {
   places: 0.017,
   geocode: 0.005,
   autocomplete: 0.003,
+  scraper: 0.05, // managed scraper run (Apify/HasData) — pricier per call
 } as const;
 
 export type CostKey = keyof typeof CALL_COST;
