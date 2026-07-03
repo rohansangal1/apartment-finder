@@ -40,8 +40,17 @@ export const localStore: UserStore = {
   },
 
   async setSaved(listing, saved) {
+    const existing = readSaved().find((r) => r.listing.id === listing.id);
     const rows = readSaved().filter((r) => r.listing.id !== listing.id);
-    if (saved) rows.unshift({ listing, savedAt: new Date().toISOString() });
+    // Preserve any existing note if this is a re-save of the same listing.
+    if (saved) rows.unshift({ listing, savedAt: new Date().toISOString(), note: existing?.note });
+    writeJson(SAVED_KEY, rows);
+  },
+
+  async setNote(listingId, note) {
+    const rows = readSaved().map((r) =>
+      r.listing.id === listingId ? { ...r, note } : r
+    );
     writeJson(SAVED_KEY, rows);
   },
 
