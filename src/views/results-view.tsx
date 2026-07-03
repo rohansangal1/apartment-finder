@@ -1,8 +1,12 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearch } from '../context/search-context';
 import { SORTERS } from '../lib/search-service';
 import ListingCard from '../components/listing-card';
+
+// Leaflet is heavy (~150 kB) and only needed when the user opens the map, so
+// load it on demand to keep the initial bundle lean.
+const ResultsMap = lazy(() => import('../components/results-map'));
 
 const SORT_OPTIONS = [
   { value: 'match', label: 'Best match' },
@@ -14,6 +18,7 @@ const SORT_OPTIONS = [
 export default function ResultsView() {
   const { results, status, error, hasSearched, criteria } = useSearch();
   const [sort, setSort] = useState('match');
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   const sorted = useMemo(() => {
     const arr = [...results];
@@ -63,27 +68,54 @@ export default function ResultsView() {
               : 'Ranked by your priorities'}
           </p>
         </div>
-        <label className="shrink-0">
-          <span className="sr-only">Sort by</span>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-ink px-2.5 py-1.5 text-sm font-medium text-slate-700 shadow-sm"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
+        <div className="flex shrink-0 items-center gap-2">
+          {view === 'list' && (
+            <label>
+              <span className="sr-only">Sort by</span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="rounded-lg border border-slate-200 bg-ink px-2.5 py-1.5 text-sm font-medium text-slate-700 shadow-sm"
+              >
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <div className="flex overflow-hidden rounded-lg border border-slate-200">
+            {(['list', 'map'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                aria-pressed={view === v}
+                className={`px-2.5 py-1.5 text-sm font-medium capitalize transition ${
+                  view === v ? 'bg-brand-600 text-white' : 'bg-ink text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {v}
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-3">
-        {sorted.map((scored) => (
-          <ListingCard key={scored.listing.id} scored={scored} inPerson={criteria.inPerson} />
-        ))}
-      </div>
+      {view === 'map' ? (
+        <Suspense
+          fallback={<div className="h-[60vh] animate-pulse rounded-2xl bg-slate-200" />}
+        >
+          <ResultsMap scored={sorted} />
+        </Suspense>
+      ) : (
+        <div className="space-y-3">
+          {sorted.map((scored) => (
+            <ListingCard key={scored.listing.id} scored={scored} inPerson={criteria.inPerson} />
+          ))}
+        </div>
+      )}
 
       <div className="mt-6 text-center">
         <Link to="/" className="text-sm font-medium text-brand-600 hover:text-brand-700">

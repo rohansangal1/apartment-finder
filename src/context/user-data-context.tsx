@@ -29,6 +29,7 @@ interface UserDataContextValue {
   savedIds: Set<string>;
   isSaved: (id: string) => boolean;
   toggleSaved: (listing: Listing) => Promise<void>;
+  setNote: (listingId: string, note: string) => Promise<void>;
   canWriteReviews: boolean;
   getReviews: (listingId: string) => Promise<Review[]>;
   addReview: (review: NewReview) => Promise<Review>;
@@ -107,6 +108,23 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
     [store, savedIds, savedListings]
   );
 
+  const setNote = useCallback(
+    async (listingId: string, note: string) => {
+      // Optimistic: patch the note locally, roll back if the write fails.
+      const prev = savedListings;
+      setSavedListings((cur) =>
+        cur.map((s) => (s.listing.id === listingId ? { ...s, note } : s))
+      );
+      try {
+        await store.setNote(listingId, note);
+      } catch (e) {
+        console.error('Failed to save note', e);
+        setSavedListings(prev);
+      }
+    },
+    [store, savedListings]
+  );
+
   // Stable identities tied to the active store, so consumers' effects only
   // re-run when the store actually changes (i.e. on sign-in/out), not every render.
   const getReviews = useCallback((listingId: string) => store.getReviews(listingId), [store]);
@@ -122,6 +140,7 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
     savedIds,
     isSaved: (id) => savedIds.has(id),
     toggleSaved,
+    setNote,
     canWriteReviews: enabled && Boolean(user),
     getReviews,
     addReview,

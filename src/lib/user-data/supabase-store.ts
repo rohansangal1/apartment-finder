@@ -35,7 +35,7 @@ export function createSupabaseStore(supabase: SupabaseClient, user: User): UserS
     async listSaved() {
       const { data, error } = await supabase
         .from('saved_listings')
-        .select('listing, saved_at')
+        .select('listing, saved_at, notes')
         .eq('user_id', user.id)
         .order('saved_at', { ascending: false });
       if (error) throw error;
@@ -45,6 +45,7 @@ export function createSupabaseStore(supabase: SupabaseClient, user: User): UserS
         .map((r): SavedListing => ({
           listing: r.listing as Listing,
           savedAt: r.saved_at as string,
+          note: (r.notes as string | null) ?? undefined,
         }));
     },
 
@@ -63,6 +64,15 @@ export function createSupabaseStore(supabase: SupabaseClient, user: User): UserS
           .eq('listing_id', listing.id);
         if (error) throw error;
       }
+    },
+
+    async setNote(listingId, note) {
+      const { error } = await supabase
+        .from('saved_listings')
+        .update({ notes: note })
+        .eq('user_id', user.id)
+        .eq('listing_id', listingId);
+      if (error) throw error;
     },
 
     async getPreferences() {

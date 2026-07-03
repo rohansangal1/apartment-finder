@@ -3,8 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import { useSearch } from '../context/search-context';
 import { useUserData } from '../context/user-data-context';
 import { getListings, getCommute, getRating, geocode } from '../lib/data-client';
+import { computeSubScores, scoreListing } from '../lib/scoring';
 import type { Listing, Rating as RatingType, Review, CommuteMode } from '../lib/types';
 import MatchScore from '../components/match-score';
+import ScoreBreakdown from '../components/score-breakdown';
 import Rating from '../components/rating';
 import Tag from '../components/tag';
 import SaveButton from '../components/save-button';
@@ -26,7 +28,6 @@ export default function DetailView() {
 
   const fromResults = results.find((r) => r.listing.id === id);
   const [listing, setListing] = useState<Listing | null>(fromResults?.listing ?? null);
-  const [matchScore] = useState<number | null>(fromResults?.matchScore ?? null);
   const [commutes, setCommutes] = useState<Record<CommuteMode, number> | null>(null);
   const [rating, setRating] = useState<RatingType | null>(
     fromResults
@@ -97,6 +98,16 @@ export default function DetailView() {
 
   const { url, isFallback } = resolveListingUrl(listing);
 
+  // Match score + sub-score breakdown: use the scored entry from Results when
+  // available; otherwise (deep link / refresh) recompute from the listing +
+  // criteria, using the chosen-mode commute once we've fetched it (0 until then,
+  // which self-corrects on the next render when commutes load).
+  const commuteMinutes = commutes ? commutes[criteria.commuteMode] : 0;
+  const matchScore =
+    fromResults?.matchScore ?? scoreListing(listing, criteria, commuteMinutes);
+  const subScores =
+    fromResults?.subScores ?? computeSubScores(listing, criteria, commuteMinutes);
+
   return (
     <div className="space-y-5">
       <Link to="/results" className="inline-flex items-center text-sm font-medium text-brand-600">
@@ -157,6 +168,21 @@ export default function DetailView() {
           </p>
         )}
       </div>
+
+      {/* Match-score breakdown */}
+      {matchScore != null && (
+        <section className="rounded-2xl border border-slate-200 bg-ink p-5 shadow-sm">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+            Why this scored {matchScore}
+          </h2>
+          <div className="mt-3">
+            <ScoreBreakdown subScores={subScores} commuteApplies={criteria.inPerson} />
+          </div>
+          <p className="mt-3 text-xs text-slate-400">
+            Each dimension is scored 0–100, then combined by the priority weights from your search.
+          </p>
+        </section>
+      )}
 
       {/* Commute breakdown */}
       <section className="rounded-2xl border border-slate-200 bg-ink p-5 shadow-sm">

@@ -14,6 +14,8 @@ import type { Listing, Review, NewReview, UserPreferences } from '../types';
 export interface SavedListing {
   listing: Listing;
   savedAt: string;
+  /** Optional private note the user attached to this saved listing. */
+  note?: string;
 }
 
 export interface UserStore {
@@ -21,6 +23,8 @@ export interface UserStore {
   listSaved(): Promise<SavedListing[]>;
   /** Save requires the full listing (snapshot); unsave keys off listing.id. */
   setSaved(listing: Listing, saved: boolean): Promise<void>;
+  /** Attach/replace the private note on an already-saved listing. */
+  setNote(listingId: string, note: string): Promise<void>;
 
   getPreferences(): Promise<UserPreferences | null>;
   savePreferences(prefs: UserPreferences): Promise<void>;

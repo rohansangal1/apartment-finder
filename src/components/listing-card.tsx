@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { ScoredListing } from '../lib/types';
 import MatchScore from './match-score';
+import ScoreBreakdown from './score-breakdown';
 import Rating from './rating';
 import Tag from './tag';
 import SaveButton from './save-button';
@@ -18,7 +19,7 @@ export default function ListingCard({
   scored: ScoredListing;
   inPerson: boolean;
 }) {
-  const { listing, matchScore, commuteMinutes, commuteMode, whyItMatched } = scored;
+  const { listing, matchScore, commuteMinutes, commuteMode, whyItMatched, subScores } = scored;
   const { url, isFallback } = resolveListingUrl(listing);
 
   return (
@@ -71,6 +72,10 @@ export default function ListingCard({
           <p className="mt-3 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700">
             <span className="font-medium">Why it matched:</span> {whyItMatched}
           </p>
+
+          <div className="mt-3">
+            <ScoreBreakdown subScores={subScores} commuteApplies={inPerson} compact />
+          </div>
 
           <div className="mt-3 flex items-center gap-3">
             <Link
