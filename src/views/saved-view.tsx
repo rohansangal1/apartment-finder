@@ -1,55 +1,42 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useUserData } from '../context/user-data-context';
-import { getListings, getRating } from '../lib/data-client';
-import type { Listing } from '../lib/types';
+import { useAuth } from '../context/auth-context';
 import Rating from '../components/rating';
 import SaveButton from '../components/save-button';
 import { formatRent, formatBeds, resolveListingUrl } from '../lib/format';
 
 /**
- * Saved apartments. Stub for now: persists IDs to localStorage and rehydrates
- * the listing metadata via the dataClient. Phase 2 swaps localStorage for the
- * `saved_listings` table behind Supabase auth (gated by a sign-in check).
+ * Saved apartments. Renders directly from the snapshots stored at save time
+ * (see UserDataContext → UserStore). Signed-in users read from Supabase (synced
+ * across devices); guests read from localStorage on this device. No re-fetch is
+ * needed because the full listing is captured when saved — listings are external
+ * and ephemeral, so there's no reliable way to rehydrate them by id later.
  */
 export default function SavedView() {
-  const { savedIds } = useUserData();
-  const [listings, setListings] = useState<Listing[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const all = await getListings({ city: '' });
-      const mine = all.filter((l) => savedIds.has(l.id));
-      const withRatings = await Promise.all(
-        mine.map(async (l): Promise<Listing> => {
-          const r = await getRating(l);
-          return { ...l, ratingValue: r.value, ratingSource: r.source };
-        })
-      );
-      if (!cancelled) setListings(withRatings);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [savedIds]);
+  const { savedListings } = useUserData();
+  const { enabled, user } = useAuth();
+  const listings = savedListings.map((s) => s.listing);
 
   return (
     <div className="space-y-4">
       <header className="pt-2">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Saved apartments</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Your shortlist. Sign in (coming soon) to keep it synced across devices.
+          {enabled && user ? (
+            'Your shortlist, synced to your account across all your devices.'
+          ) : (
+            <>
+              Your shortlist, saved on this device.{' '}
+              <Link to="/account" className="font-medium text-brand-600 hover:underline">
+                Sign in
+              </Link>{' '}
+              to sync it across devices.
+            </>
+          )}
         </p>
       </header>
 
-      {listings == null ? (
-        <div className="space-y-3">
-          {[0, 1].map((i) => (
-            <div key={i} className="h-24 animate-pulse rounded-2xl bg-slate-200" />
-          ))}
-        </div>
-      ) : listings.length === 0 ? (
+      {listings.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <span className="text-4xl">🤍</span>
           <h2 className="mt-3 text-lg font-semibold text-slate-800">Nothing saved yet</h2>
@@ -90,7 +77,7 @@ export default function SavedView() {
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <SaveButton id={l.id} />
+                  <SaveButton listing={l} />
                   <a
                     href={url}
                     target="_blank"

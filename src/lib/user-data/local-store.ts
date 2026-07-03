@@ -5,10 +5,12 @@
  * identity, gated behind sign-in).
  */
 import type { Review, NewReview, UserPreferences } from '../types';
-import type { UserStore } from './types';
+import type { UserStore, SavedListing } from './types';
 import { getReviews as getMockReviews } from '../data-client';
 
-const SAVED_KEY = 'nestle.saved.v1';
+// v2: entries are full SavedListing snapshots, not bare ids. The old v1 key
+// (ids only) is intentionally not migrated — those can't be rehydrated anyway.
+const SAVED_KEY = 'nestle.saved.v2';
 const PREFS_KEY = 'nestle.prefs.v1';
 
 function readJson<T>(key: string, fallback: T): T {
@@ -28,16 +30,19 @@ function writeJson(key: string, value: unknown): void {
   }
 }
 
+function readSaved(): SavedListing[] {
+  return readJson<SavedListing[]>(SAVED_KEY, []);
+}
+
 export const localStore: UserStore = {
-  async listSavedIds() {
-    return readJson<string[]>(SAVED_KEY, []);
+  async listSaved() {
+    return readSaved();
   },
 
-  async setSaved(listingId, saved) {
-    const ids = new Set(readJson<string[]>(SAVED_KEY, []));
-    if (saved) ids.add(listingId);
-    else ids.delete(listingId);
-    writeJson(SAVED_KEY, [...ids]);
+  async setSaved(listing, saved) {
+    const rows = readSaved().filter((r) => r.listing.id !== listing.id);
+    if (saved) rows.unshift({ listing, savedAt: new Date().toISOString() });
+    writeJson(SAVED_KEY, rows);
   },
 
   async getPreferences() {
@@ -57,3 +62,8 @@ export const localStore: UserStore = {
     throw new Error('Sign in to write a review.');
   },
 };
+
+/** Drop all local saves — used after merging a guest shortlist into an account. */
+export function clearLocalSaved(): void {
+  writeJson(SAVED_KEY, []);
+}

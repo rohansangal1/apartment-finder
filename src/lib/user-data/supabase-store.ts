@@ -7,8 +7,8 @@
  * (RLS enforces it server-side too; this keeps the client honest).
  */
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import type { Review, NewReview, UserPreferences } from '../types';
-import type { UserStore } from './types';
+import type { Listing, Review, NewReview, UserPreferences } from '../types';
+import type { UserStore, SavedListing } from './types';
 
 interface ReviewRow {
   id: string;
@@ -32,27 +32,35 @@ const toReview = (r: ReviewRow): Review => ({
 
 export function createSupabaseStore(supabase: SupabaseClient, user: User): UserStore {
   return {
-    async listSavedIds() {
+    async listSaved() {
       const { data, error } = await supabase
         .from('saved_listings')
-        .select('listing_id')
-        .eq('user_id', user.id);
+        .select('listing, saved_at')
+        .eq('user_id', user.id)
+        .order('saved_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []).map((r) => r.listing_id as string);
+      return (data ?? [])
+        // Rows saved before the snapshot migration have listing = null; skip them.
+        .filter((r) => r.listing)
+        .map((r): SavedListing => ({
+          listing: r.listing as Listing,
+          savedAt: r.saved_at as string,
+        }));
     },
 
-    async setSaved(listingId, saved) {
+    async setSaved(listing, saved) {
       if (saved) {
-        const { error } = await supabase
-          .from('saved_listings')
-          .upsert({ user_id: user.id, listing_id: listingId }, { onConflict: 'user_id,listing_id' });
+        const { error } = await supabase.from('saved_listings').upsert(
+          { user_id: user.id, listing_id: listing.id, listing },
+          { onConflict: 'user_id,listing_id' }
+        );
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('saved_listings')
           .delete()
           .eq('user_id', user.id)
-          .eq('listing_id', listingId);
+          .eq('listing_id', listing.id);
         if (error) throw error;
       }
     },

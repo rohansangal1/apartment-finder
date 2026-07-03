@@ -112,7 +112,7 @@ export default function DetailView() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <SaveButton id={listing.id} />
+            <SaveButton listing={listing} />
             {matchScore != null && <MatchScore score={matchScore} size="lg" />}
           </div>
         </div>

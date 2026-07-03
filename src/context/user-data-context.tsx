@@ -12,21 +12,23 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useCallback,
   type ReactNode,
 } from 'react';
-import type { Review, NewReview, UserPreferences } from '../lib/types';
-import type { UserStore } from '../lib/user-data/types';
-import { localStore } from '../lib/user-data/local-store';
+import type { Listing, Review, NewReview, UserPreferences } from '../lib/types';
+import type { UserStore, SavedListing } from '../lib/user-data/types';
+import { localStore, clearLocalSaved } from '../lib/user-data/local-store';
 import { createSupabaseStore } from '../lib/user-data/supabase-store';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './auth-context';
 
 interface UserDataContextValue {
+  savedListings: SavedListing[];
   savedIds: Set<string>;
   isSaved: (id: string) => boolean;
-  toggleSaved: (id: string) => Promise<void>;
+  toggleSaved: (listing: Listing) => Promise<void>;
   canWriteReviews: boolean;
   getReviews: (listingId: string) => Promise<Review[]>;
   addReview: (review: NewReview) => Promise<Review>;
@@ -45,46 +47,64 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
     return localStore;
   }, [enabled, user]);
 
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [savedListings, setSavedListings] = useState<SavedListing[]>([]);
+  const savedIds = useMemo(
+    () => new Set(savedListings.map((s) => s.listing.id)),
+    [savedListings]
+  );
 
-  // Load saved IDs from the active store (re-runs on sign-in/out).
+  // Whether we've already merged this signed-in user's guest shortlist. Reset
+  // whenever the store changes (e.g. sign-out) so the next sign-in merges again.
+  const mergedRef = useRef(false);
+
+  // Load saved snapshots from the active store (re-runs on sign-in/out). When a
+  // guest signs in, first push any local shortlist into the account, then clear
+  // it locally so the two don't diverge.
   useEffect(() => {
     let cancelled = false;
-    store
-      .listSavedIds()
-      .then((ids) => {
-        if (!cancelled) setSavedIds(new Set(ids));
-      })
-      .catch((e) => console.error('Failed to load saved listings', e));
+    const usingAccount = store !== localStore;
+    (async () => {
+      try {
+        if (usingAccount && !mergedRef.current) {
+          mergedRef.current = true;
+          const local = await localStore.listSaved();
+          if (local.length) {
+            await Promise.all(local.map((s) => store.setSaved(s.listing, true)));
+            clearLocalSaved();
+          }
+        } else if (!usingAccount) {
+          mergedRef.current = false;
+        }
+        const saved = await store.listSaved();
+        if (!cancelled) setSavedListings(saved);
+      } catch (e) {
+        console.error('Failed to load saved listings', e);
+      }
+    })();
     return () => {
       cancelled = true;
     };
   }, [store]);
 
   const toggleSaved = useCallback(
-    async (id: string) => {
-      const willSave = !savedIds.has(id);
+    async (listing: Listing) => {
+      const willSave = !savedIds.has(listing.id);
       // Optimistic update for a responsive heart toggle.
-      setSavedIds((prev) => {
-        const next = new Set(prev);
-        if (willSave) next.add(id);
-        else next.delete(id);
-        return next;
+      const prev = savedListings;
+      setSavedListings((cur) => {
+        const without = cur.filter((s) => s.listing.id !== listing.id);
+        return willSave
+          ? [{ listing, savedAt: new Date().toISOString() }, ...without]
+          : without;
       });
       try {
-        await store.setSaved(id, willSave);
+        await store.setSaved(listing, willSave);
       } catch (e) {
         console.error('Failed to update saved listing', e);
-        // Roll back on failure.
-        setSavedIds((prev) => {
-          const next = new Set(prev);
-          if (willSave) next.delete(id);
-          else next.add(id);
-          return next;
-        });
+        setSavedListings(prev); // Roll back on failure.
       }
     },
-    [store, savedIds]
+    [store, savedIds, savedListings]
   );
 
   // Stable identities tied to the active store, so consumers' effects only
@@ -98,6 +118,7 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
   );
 
   const value: UserDataContextValue = {
+    savedListings,
     savedIds,
     isSaved: (id) => savedIds.has(id),
     toggleSaved,

@@ -8,11 +8,19 @@
  * UserDataContext picks the implementation based on auth state, so components
  * never branch on "are we signed in" for storage — they just call the store.
  */
-import type { Review, NewReview, UserPreferences } from '../types';
+import type { Listing, Review, NewReview, UserPreferences } from '../types';
+
+/** A shortlisted listing: the full snapshot captured at save time + when. */
+export interface SavedListing {
+  listing: Listing;
+  savedAt: string;
+}
 
 export interface UserStore {
-  listSavedIds(): Promise<string[]>;
-  setSaved(listingId: string, saved: boolean): Promise<void>;
+  /** Full snapshots, most-recently-saved first. */
+  listSaved(): Promise<SavedListing[]>;
+  /** Save requires the full listing (snapshot); unsave keys off listing.id. */
+  setSaved(listing: Listing, saved: boolean): Promise<void>;
 
   getPreferences(): Promise<UserPreferences | null>;
   savePreferences(prefs: UserPreferences): Promise<void>;

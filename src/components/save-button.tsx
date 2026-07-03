@@ -1,9 +1,16 @@
 import { useUserData } from '../context/user-data-context';
+import type { Listing } from '../lib/types';
 
 /** Heart toggle to save/unsave a listing (guest: localStorage; signed in: per-user DB). */
-export default function SaveButton({ id, className = '' }: { id: string; className?: string }) {
+export default function SaveButton({
+  listing,
+  className = '',
+}: {
+  listing: Listing;
+  className?: string;
+}) {
   const { isSaved, toggleSaved } = useUserData();
-  const saved = isSaved(id);
+  const saved = isSaved(listing.id);
 
   return (
     <button
@@ -11,7 +18,7 @@ export default function SaveButton({ id, className = '' }: { id: string; classNa
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        void toggleSaved(id);
+        void toggleSaved(listing);
       }}
       aria-pressed={saved}
       aria-label={saved ? 'Remove from saved' : 'Save apartment'}

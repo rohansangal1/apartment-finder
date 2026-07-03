@@ -37,7 +37,7 @@ export default function ListingCard({
               </Link>
               <p className="truncate text-sm text-slate-500">{listing.address}</p>
             </div>
-            <SaveButton id={listing.id} />
+            <SaveButton listing={listing} />
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
